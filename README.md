@@ -38,10 +38,22 @@ end) and Model S door handles. Falcon and front doors are never commanded.
 Command counts stay within the per-show limits from Tesla's README, and the
 "must be open before it can dance" and travel-time rules are respected.
 
+## Deploy
+
+The app is a static site, so it deploys anywhere that serves `dist/`.
+`vercel.json` is included; either import the repository at
+<https://vercel.com/new> or deploy from the CLI:
+
+```sh
+npx vercel --prod
+```
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dolab080-star/TDR-App)
+
 ## Develop
 
 ```sh
-npm install --legacy-peer-deps
+npm ci             # .npmrc enables legacy-peer-deps for you
 npm run dev        # http://localhost:5173
 npm test           # vitest: fseq encoder, validator, generator, beat tracker
 npm run build      # typecheck + production build in dist/
