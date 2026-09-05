@@ -17,6 +17,8 @@ import { encodeWav } from './lib/export/wav';
 import { canPassThrough, sniffAudio, type AudioInfo } from './lib/export/audioInfo';
 import { buildShowZip, downloadBlob, sanitizeBaseName } from './lib/export/zip';
 import { synthDemoTrack } from './lib/demo/synthDemo';
+import { YouTubeLink } from './components/YouTubeLink';
+import { durationMismatch, type LinkedVideo } from './lib/youtube';
 
 interface LoadedSong {
   name: string;
@@ -41,6 +43,7 @@ export default function App() {
   const [audioChoice, setAudioChoice] = useState<AudioChoice['id']>('original');
   const [packing, setPacking] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [video, setVideo] = useState<LinkedVideo | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const runAnalysis = useAnalysisWorker();
 
@@ -63,7 +66,7 @@ export default function App() {
         const info = isDemo ? { container: 'wav' as const, sampleRate: TARGET_RATE, channels: 2, bitsPerSample: 16, pcm: true } : sniffAudio(bytes);
         const loaded: LoadedSong = { name, bytes, info, buffer: buf, playbackUrl: URL.createObjectURL(playbackBlob), isDemo };
         setSong(loaded);
-        setCustomName(sanitizeBaseName(name));
+        setCustomName('');
         setAudioChoice(canPassThrough(info) ? 'original' : 'wav');
         setPhase({ kind: 'analyzing', name, progress: { stage: 'Preparing audio', fraction: 0 } });
         const mono = toMono(buf);
@@ -101,7 +104,9 @@ export default function App() {
   const show = useMemo(() => (analysis ? generateShow(analysis, options) : null), [analysis, options]);
   const brightness = useMemo(() => (show ? simulateBrightness(show.frames, show.frameCount) : null), [show]);
   const audioExt: 'wav' | 'mp3' = song && audioChoice === 'original' && song.info.container === 'mp3' ? 'mp3' : 'wav';
-  const baseName = useSongName ? sanitizeBaseName(customName || song?.name || 'lightshow') : 'lightshow';
+  const songTitle = video?.title ?? song?.name ?? 'lightshow';
+  const songBaseName = sanitizeBaseName(customName || songTitle);
+  const baseName = useSongName ? songBaseName : 'lightshow';
   const fseqBytes = useMemo(
     () => (show ? encodeFseq(show.frames, { channelCount: 48, stepTimeMs: show.stepMs, mediaFile: `${baseName}.${audioExt}` }) : null),
     [show, baseName, audioExt],
@@ -139,15 +144,15 @@ export default function App() {
         audio,
         audioExt,
         baseName,
-        songTitle: song.name,
+        songTitle,
         bpm: analysis.bpm,
         durationS: analysis.duration,
       });
-      downloadBlob(blob, `${sanitizeBaseName(song.name)}_LightShow.zip`);
+      downloadBlob(blob, `${sanitizeBaseName(songTitle)}_LightShow.zip`);
     } finally {
       setPacking(false);
     }
-  }, [song, fseqBytes, analysis, audioBytes, audioExt, baseName]);
+  }, [song, fseqBytes, analysis, audioBytes, audioExt, baseName, songTitle]);
 
   const onDownloadFseq = useCallback(() => {
     if (!fseqBytes) return;
@@ -193,6 +198,7 @@ export default function App() {
     audioRef.current?.pause();
     setSong(null);
     setAnalysis(null);
+    setVideo(null);
     setPhase({ kind: 'idle' });
     setError(null);
   };
@@ -218,7 +224,17 @@ export default function App() {
 
       {error && <div className="error">⚠ {error}</div>}
 
-      {phase.kind === 'idle' && <DropZone onFile={onFile} onDemo={onDemo} />}
+      {phase.kind === 'idle' && (
+        <>
+          <YouTubeLink video={video} onVideo={setVideo} />
+          <DropZone
+            onFile={onFile}
+            onDemo={onDemo}
+            heading={video ? `Drop the audio file for “${video.title ?? 'this video'}”` : undefined}
+            compact={!!video}
+          />
+        </>
+      )}
 
       {(phase.kind === 'decoding' || phase.kind === 'analyzing') && (
         <div className="progress">
@@ -236,10 +252,18 @@ export default function App() {
             <div className="panel">
               <div className="songbar">
                 <div>
-                  <div className="title" title={song.name}>
-                    {song.name}
+                  <div className="title" title={songTitle}>
+                    {songTitle}
                   </div>
                   <div className="meta">
+                    {video && (
+                      <>
+                        <a href={video.url} target="_blank" rel="noreferrer">
+                          YouTube
+                        </a>{' '}
+                        · audio from {song.name} ·{' '}
+                      </>
+                    )}
                     {formatDuration(analysis.duration)} · {analysis.bpm.toFixed(1)} BPM · {analysis.bars.length} bars · {analysis.sections.length} sections
                   </div>
                 </div>
@@ -254,6 +278,13 @@ export default function App() {
                     ))}
                 </div>
               </div>
+              {video && durationMismatch(video.duration, analysis.duration) && (
+                <div className="mismatch">
+                  ⚠ The YouTube video is {formatDuration(video.duration!).replace(/\.\d+$/, '')} long but this audio file is{' '}
+                  {formatDuration(analysis.duration).replace(/\.\d+$/, '')}. They look like different versions, so the show may not line up
+                  with the video you had in mind. The show is generated from the audio file, so it will still match the file.
+                </div>
+              )}
             </div>
             <div className="panel">
               <CarPreview brightness={brightness} frames={show.frames} frameCount={show.frameCount} getTime={getTime} />
@@ -287,7 +318,7 @@ export default function App() {
             <SettingsPanel options={options} onChange={setOptions} />
             <DownloadPanel
               baseName={baseName}
-              songBaseName={sanitizeBaseName(customName || song.name)}
+              songBaseName={songBaseName}
               onBaseNameChange={setCustomName}
               useSongName={useSongName}
               onUseSongNameChange={setUseSongName}

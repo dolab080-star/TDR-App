@@ -4,9 +4,13 @@ interface Props {
   onFile: (file: File) => void;
   onDemo: () => void;
   disabled?: boolean;
+  /** Override the headline, e.g. when a YouTube link has been attached. */
+  heading?: string;
+  /** Hide the explanatory steps (used once a link has been attached). */
+  compact?: boolean;
 }
 
-export function DropZone({ onFile, onDemo, disabled }: Props) {
+export function DropZone({ onFile, onDemo, disabled, heading, compact }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [active, setActive] = useState(false);
 
@@ -37,7 +41,7 @@ export function DropZone({ onFile, onDemo, disabled }: Props) {
         aria-label="Choose a song"
       >
         <div className="icon">🎵</div>
-        <h2>Drop a song here</h2>
+        <h2>{heading ?? 'Drop a song here'}</h2>
         <p>MP3, WAV, M4A, FLAC, OGG… anything your browser can play. Nothing is uploaded; everything runs on this device.</p>
         <p className="or">or</p>
         <button
@@ -61,6 +65,7 @@ export function DropZone({ onFile, onDemo, disabled }: Props) {
           }}
         />
       </div>
+      {!compact && (
       <div className="steps">
         <div className="step">
           <b>1. Pick a song</b>
@@ -75,6 +80,7 @@ export function DropZone({ onFile, onDemo, disabled }: Props) {
           <span>Download a ready-made LightShow folder, plug it in, then Toybox → Light Show → Schedule Show.</span>
         </div>
       </div>
+      )}
     </div>
   );
 }
