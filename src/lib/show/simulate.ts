@@ -6,8 +6,16 @@
 import { CHANNEL_COUNT, LIGHT, RAMPING_CHANNELS, LIGHT_CHANNELS } from '../tesla/channels';
 import { rampSeconds } from './frameBuffer';
 
-/** frameCount x 48 brightness values in 0..1 (closure channels are left 0). */
-export function simulateBrightness(frames: Uint8Array, frameCount: number, stepMs = 20): Float32Array {
+/**
+ * frameCount x 48 brightness values in 0..1 (closure channels are left 0).
+ * `ramping` is the set of channels that ramp on the selected vehicle.
+ */
+export function simulateBrightness(
+  frames: Uint8Array,
+  frameCount: number,
+  stepMs = 20,
+  ramping: ReadonlySet<number> = RAMPING_CHANNELS,
+): Float32Array {
   const out = new Float32Array(frameCount * CHANNEL_COUNT);
   const dt = stepMs / 1000;
   const level = new Float32Array(CHANNEL_COUNT);
@@ -16,7 +24,7 @@ export function simulateBrightness(frames: Uint8Array, frameCount: number, stepM
     for (const ch of LIGHT_CHANNELS) {
       const i = ch - 1;
       const v = frames[row + i];
-      if (RAMPING_CHANNELS.has(ch)) {
+      if (ramping.has(ch)) {
         const ramp = rampSeconds(v);
         const target = v >= 128 ? 1 : 0;
         if (ramp === 0) level[i] = target;

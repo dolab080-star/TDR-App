@@ -56,6 +56,12 @@ describe('wav + sniffing', () => {
     expect(sanitizeBaseName('My Song (Remix).mp3')).toBe('My_Song_Remix');
     expect(sanitizeBaseName('???.wav')).toBe('lightshow');
   });
+
+  it('does not truncate video titles that happen to contain a dot', () => {
+    expect(sanitizeBaseName('Mr. Brightside (Official Video)')).toBe('Mr_Brightside_Official_Video');
+    expect(sanitizeBaseName('Symphony No. 5')).toBe('Symphony_No_5');
+    expect(sanitizeBaseName('Daft Punk - Harder, Better')).toBe('Daft_Punk_-_Harder_Better');
+  });
 });
 
 describe('simulateBrightness', () => {

@@ -33,10 +33,16 @@ describe('parseYouTubeId', () => {
     'https://evil.example.com/watch?v=dQw4w9WgXcQ',
     'https://youtube.com.evil.example/watch?v=dQw4w9WgXcQ',
     'javascript:alert(1)',
+    'https://www.youtube.com/embed/videoseries?list=PLabc123',
+    'https://www.youtube.com/embed/live_stream?channel=UC123',
   ];
   for (const url of bad) {
     it(`rejects ${JSON.stringify(url)}`, () => expect(parseYouTubeId(url)).toBeNull());
   }
+
+  it('falls back to the v= param on a videoseries embed that also names a video', () => {
+    expect(parseYouTubeId(`https://www.youtube.com/embed/videoseries?list=PLabc&v=${id}`)).toBe(id);
+  });
 
   it('builds a canonical watch url', () => {
     expect(youtubeWatchUrl(id)).toBe(`https://www.youtube.com/watch?v=${id}`);

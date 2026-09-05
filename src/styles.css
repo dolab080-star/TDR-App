@@ -700,3 +700,150 @@ input[type='range'] {
     flex-direction: column;
   }
 }
+
+/* --- vehicle & closures --- */
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 12px;
+}
+
+.caps summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.caps ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.caps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--panel-2);
+}
+
+.caps li .val {
+  color: var(--muted);
+  text-align: right;
+}
+
+.caps li.absent {
+  opacity: 0.5;
+}
+
+.closure {
+  margin-bottom: 8px;
+}
+
+.closure .toggle {
+  margin-bottom: 0;
+}
+
+.closure.on .toggle {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-color: #3a4256;
+}
+
+.closure-body {
+  border: 1px solid #3a4256;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
+  padding: 12px 12px 4px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.closure-body .field {
+  margin-bottom: 10px;
+}
+
+.closure-body .select + .select,
+.closure-body .select + .times {
+  margin-top: 6px;
+}
+
+.usage-pill {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 7px;
+  vertical-align: 1px;
+}
+
+.times {
+  display: flex;
+  gap: 6px;
+}
+
+.times .select {
+  flex: 1;
+}
+
+.times .btn {
+  white-space: nowrap;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 0 0 10px;
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--accent);
+}
+
+.mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- install --- */
+.install {
+  margin-bottom: 18px;
+}
+
+.steps-list {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.steps-list li {
+  margin-bottom: 6px;
+}
+
+@media (max-width: 600px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .times {
+    flex-direction: column;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

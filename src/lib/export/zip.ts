@@ -11,9 +11,12 @@ export interface ShowPackage {
   durationS: number;
 }
 
+/** Known audio file extensions to strip; a bare "." (as in a song title like "Mr. Brightside") is left alone. */
+const AUDIO_EXT_RE = /\.(mp3|wav|m4a|aac|flac|ogg|opus|webm|wma|aiff?)$/i;
+
 export function sanitizeBaseName(name: string): string {
   const base = name
-    .replace(/\.[^.]+$/, '')
+    .replace(AUDIO_EXT_RE, '')
     .replace(/[^A-Za-z0-9 _-]+/g, '')
     .trim()
     .replace(/\s+/g, '_')

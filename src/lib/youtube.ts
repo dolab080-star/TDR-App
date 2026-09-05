@@ -6,6 +6,8 @@
  */
 
 const ID_RE = /^[A-Za-z0-9_-]{11}$/;
+/** youtube.com/embed/<slug> reserved slugs that are not video ids. */
+const RESERVED_SLUGS = new Set(['videoseries', 'live_stream']);
 
 /** Extract the 11-character video id from any common YouTube URL form. */
 export function parseYouTubeId(input: string): string | null {
@@ -19,12 +21,15 @@ export function parseYouTubeId(input: string): string | null {
     return null;
   }
   const host = url.hostname.toLowerCase().replace(/^www\.|^m\.|^music\./, '');
-  const check = (id: string | null | undefined) => (id && ID_RE.test(id) ? id : null);
+  const check = (id: string | null | undefined) => (id && !RESERVED_SLUGS.has(id) && ID_RE.test(id) ? id : null);
   if (host === 'youtu.be') return check(url.pathname.split('/')[1]);
   if (host !== 'youtube.com' && host !== 'youtube-nocookie.com') return null;
   const parts = url.pathname.split('/').filter(Boolean);
   if (parts[0] === 'watch') return check(url.searchParams.get('v'));
-  if (['shorts', 'embed', 'live', 'v', 'e'].includes(parts[0])) return check(parts[1]);
+  if (['shorts', 'embed', 'live', 'v', 'e'].includes(parts[0])) {
+    // youtube.com/embed/videoseries?list=...&v=ID still names a real video.
+    return check(parts[1]) ?? (RESERVED_SLUGS.has(parts[1]) ? check(url.searchParams.get('v')) : null);
+  }
   return check(url.searchParams.get('v'));
 }
 
@@ -55,6 +60,23 @@ export interface YTPlayer {
   destroy(): void;
 }
 
+/** YouTube IFrame API onError codes: https://developers.google.com/youtube/iframe_api_reference#onError */
+export type YTErrorCode = 2 | 5 | 100 | 101 | 150;
+
+export function ytErrorMessage(code: YTErrorCode | undefined): string {
+  switch (code) {
+    case 2:
+      return 'That video id is not valid — check the link.';
+    case 100:
+      return 'This video is private or has been removed.';
+    case 101:
+    case 150:
+      return 'The uploader does not allow this video to be embedded elsewhere. You can still open it on YouTube.';
+    default:
+      return 'The YouTube player could not load here (offline, or blocked by an extension).';
+  }
+}
+
 interface YTPlayerOptions {
   videoId: string;
   host?: string;
@@ -63,7 +85,7 @@ interface YTPlayerOptions {
   playerVars?: Record<string, string | number>;
   events?: {
     onReady?: (e: { target: YTPlayer }) => void;
-    onError?: (e: { data: number }) => void;
+    onError?: (e: { data: YTErrorCode }) => void;
   };
 }
 

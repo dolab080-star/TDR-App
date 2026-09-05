@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { CH, CHANNEL_COUNT } from '../lib/tesla/channels';
 import { closureLabel } from '../lib/show/simulate';
+import type { VehicleProfile } from '../lib/tesla/vehicles';
 
 interface Props {
   /** frameCount x 48 brightness from simulateBrightness(). */
@@ -10,6 +11,8 @@ interface Props {
   frameCount: number;
   /** Returns the current playback time in seconds. */
   getTime: () => number;
+  /** Selected vehicle; lights it does not have are hidden. */
+  profile?: VehicleProfile;
 }
 
 type Color = 'white' | 'amber' | 'red';
@@ -72,7 +75,24 @@ const CLOSURE_ROWS: { label: string; chans: number[] }[] = [
   { label: 'Door handles', chans: [CH.doorHandleFrontL, CH.doorHandleRearL, CH.doorHandleFrontR, CH.doorHandleRearR] },
 ];
 
-export function CarPreview({ brightness, frames, frameCount, getTime }: Props) {
+function closureAvailable(p: VehicleProfile, label: string): boolean {
+  switch (label) {
+    case 'Charge port':
+      return p.closures.chargePort;
+    case 'Mirrors':
+      return p.closures.mirrors;
+    case 'Windows':
+      return p.closures.windows;
+    case 'Liftgate':
+      return p.closures.liftgate;
+    case 'Door handles':
+      return p.closures.doorHandles;
+    default:
+      return true;
+  }
+}
+
+export function CarPreview({ brightness, frames, frameCount, getTime, profile }: Props) {
   const lightRefs = useRef<(SVGRectElement | null)[]>([]);
   const mirrorL = useRef<SVGRectElement>(null);
   const mirrorR = useRef<SVGRectElement>(null);
@@ -187,7 +207,7 @@ export function CarPreview({ brightness, frames, frameCount, getTime }: Props) {
               width={s.w}
               height={s.h}
               rx={s.rx ?? 2}
-              style={{ opacity: 0.14 }}
+              style={{ opacity: 0.14, display: profile?.absentChannels.has(s.ch) ? 'none' : undefined }}
             />
           ))}
         </svg>
@@ -195,8 +215,8 @@ export function CarPreview({ brightness, frames, frameCount, getTime }: Props) {
       <div>
         <div className="legend">
           {CLOSURE_ROWS.map((r, i) => (
-            <div className="row" key={r.label}>
-              <span>{r.label}</span>
+            <div className="row" key={r.label} hidden={!!profile && !closureAvailable(profile, r.label)}>
+              <span>{r.label === 'Liftgate' && profile ? profile.closures.liftgateLabel : r.label}</span>
               <span className="val" ref={(el) => { closureVals.current[i] = el; }}>
                 idle
               </span>
@@ -204,8 +224,8 @@ export function CarPreview({ brightness, frames, frameCount, getTime }: Props) {
           ))}
         </div>
         <p className="hint">
-          Preview approximates the car: ramping lights fade, boolean lights snap, closures show their commanded state. Actual lights
-          vary by model (e.g. Model 3/Y share one output for Channels 4–6).
+          Preview approximates your car: lights it does not have are hidden, ramping lights fade, on/off lights snap, closures show
+          their commanded state.{profile ? ` Showing ${profile.label}.` : ''}
         </p>
       </div>
     </div>

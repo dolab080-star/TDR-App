@@ -8,9 +8,11 @@ interface Props {
   heading?: string;
   /** Hide the explanatory steps (used once a link has been attached). */
   compact?: boolean;
+  /** Hide the demo button, e.g. when a specific song is already linked. */
+  hideDemo?: boolean;
 }
 
-export function DropZone({ onFile, onDemo, disabled, heading, compact }: Props) {
+export function DropZone({ onFile, onDemo, disabled, heading, compact, hideDemo }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [active, setActive] = useState(false);
 
@@ -43,17 +45,21 @@ export function DropZone({ onFile, onDemo, disabled, heading, compact }: Props) 
         <div className="icon">🎵</div>
         <h2>{heading ?? 'Drop a song here'}</h2>
         <p>MP3, WAV, M4A, FLAC, OGG… anything your browser can play. Nothing is uploaded; everything runs on this device.</p>
-        <p className="or">or</p>
-        <button
-          className="btn demo"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDemo();
-          }}
-          disabled={disabled}
-        >
-          ▶ Try it with a built-in demo beat
-        </button>
+        {!hideDemo && (
+          <>
+            <p className="or">or</p>
+            <button
+              className="btn demo"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDemo();
+              }}
+              disabled={disabled}
+            >
+              ▶ Try it with a built-in demo beat
+            </button>
+          </>
+        )}
         <input
           ref={inputRef}
           type="file"
