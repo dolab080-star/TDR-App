@@ -1006,3 +1006,7 @@ input[type='range'] {
     grid-template-columns: 1fr;
   }
 }
+
+.site-tag {
+  margin: 0 0 10px;
+}
