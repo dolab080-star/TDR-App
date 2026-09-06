@@ -40,15 +40,54 @@ Command counts stay within the per-show limits from Tesla's README, and the
 
 ## Deploy
 
-The app is a static site, so it deploys anywhere that serves `dist/`.
-`vercel.json` is included; either import the repository at
-<https://vercel.com/new> or deploy from the CLI:
+The site itself is static (`dist/`), but selling the full version needs two
+small serverless functions under `api/`, so Vercel is the easiest host —
+import the repository at <https://vercel.com/new> (it picks up `vercel.json`
+and builds `api/*.ts` automatically) or deploy from the CLI:
 
 ```sh
 npx vercel --prod
 ```
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dolab080-star/TDR-App)
+
+## Selling the app
+
+The analysis, preview, vehicle picker and every closure setting are free to
+try. Downloading the finished show (`.fseq` / `LightShow.zip` / audio) is a
+one-time purchase, handled by Stripe Checkout. There's no account system —
+"buying" unlocks downloads on the browser that completed checkout, the same
+local-first spirit as the rest of the app; the confirmation link doubles as
+a receipt that unlocks a new device.
+
+To turn payments on:
+
+1. Create a [Stripe](https://dashboard.stripe.com/register) account (test
+   mode works for trying this out — no real charges).
+2. **Product catalog → Add product.** Name it (e.g. "Tesla Light Show Maker
+   — Full Unlock"), set a **one-time** price (the app shows `$7` in
+   `src/lib/price.ts` — change that constant to match whatever you charge).
+   Copy the price's ID (`price_...`).
+3. **Developers → API keys.** Copy the **secret key** (`sk_test_...` or
+   `sk_live_...`) — only the secret key is needed; nothing Stripe-related
+   runs in the browser.
+4. In your Vercel project: **Settings → Environment Variables**, add:
+   - `STRIPE_SECRET_KEY` = the secret key from step 3
+   - `STRIPE_PRICE_ID` = the price ID from step 2
+
+   (`.env.example` lists these for reference — don't commit real keys.)
+5. Redeploy (env var changes need a new deployment to take effect).
+6. Test the whole flow in Stripe test mode with card `4242 4242 4242 4242`,
+   any future expiry/CVC, before switching to a live secret key.
+
+Until those env vars are set, `/pricing.html`'s buy button shows "Payments
+aren't set up yet" instead of failing silently — the rest of the app works
+normally either way.
+
+`api/create-checkout-session.ts` starts a Checkout Session and redirects to
+Stripe; `api/verify-purchase.ts` confirms the session actually paid before
+the client unlocks anything in `localStorage` (see `src/lib/license.ts`) —
+a `?session_id=` alone is never trusted as proof of payment.
 
 ## Develop
 

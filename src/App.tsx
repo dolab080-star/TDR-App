@@ -9,8 +9,10 @@ import { StatsPanel } from './components/StatsPanel';
 import { DownloadPanel, type AudioChoice } from './components/DownloadPanel';
 import { InstallPanel } from './components/InstallPanel';
 import { YouTubeLink } from './components/YouTubeLink';
+import { PurchaseBanner } from './components/PurchaseBanner';
 import { useAnalysisWorker, type AnalysisProgress } from './hooks/useAnalysisWorker';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
+import { useLicense } from './hooks/useLicense';
 import { decodeToBuffer, toExportChannels, toMono, TARGET_RATE } from './lib/audio/decode';
 import type { AnalysisResult } from './lib/audio/analyze';
 import { generateShow } from './lib/show/generator';
@@ -75,6 +77,7 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const runAnalysis = useAnalysisWorker();
   const install = useInstallPrompt();
+  const { license, purchaseCheck, dismissPurchaseCheck } = useLicense();
 
   useEffect(() => {
     try {
@@ -255,6 +258,11 @@ export default function App() {
           </div>
         </div>
         <div className="actions">
+          {!license.licensed && (
+            <a className="btn" href="/pricing.html">
+              Pricing
+            </a>
+          )}
           {!install.installed && (
             <button
               className="btn"
@@ -275,6 +283,7 @@ export default function App() {
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
+      <PurchaseBanner status={purchaseCheck} license={license} onDismiss={dismissPurchaseCheck} />
       {(showInstall || (phase.kind === 'idle' && !install.installed)) && <InstallPanel install={install} onClose={showInstall ? () => setShowInstall(false) : undefined} />}
 
       {/* Kept mounted (hidden) outside "idle" so a metadata lookup started just
@@ -395,6 +404,7 @@ export default function App() {
               onDownloadZip={onDownloadZip}
               onDownloadFseq={onDownloadFseq}
               onDownloadAudio={onDownloadAudio}
+              license={license}
             />
           </div>
         </div>
