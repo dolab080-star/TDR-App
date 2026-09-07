@@ -147,8 +147,8 @@ export function DemoShowcase({ hidden = false }: Props) {
         <>
           <CarPreview brightness={brightness} frames={show.frames} frameCount={show.frameCount} getTime={getTime} profile={profile} />
           <div className="transport">
-            <button className="btn primary" onClick={toggle} aria-label={playing ? 'Pause the demo beat' : 'Play the demo beat'}>
-              {playing ? '❚❚ Pause' : '▶ Play the demo beat'}
+            <button className="btn primary" onClick={toggle} aria-label={playing ? 'Pause demo' : 'Play demo'}>
+              {playing ? '❚❚ Pause' : '▶ Play demo'}
             </button>
             <span className="time">
               {short(clock)} / {short(analysis.duration)}
