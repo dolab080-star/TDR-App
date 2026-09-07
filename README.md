@@ -109,6 +109,33 @@ Stripe; `api/verify-purchase.ts` confirms the session actually paid before
 the client unlocks anything in `localStorage` (see `src/lib/license.ts`) —
 a `?session_id=` alone is never trusted as proof of payment.
 
+### Sign-in emails (returning buyers)
+
+Buyers come back on a new computer, or after clearing their browser, through
+**Already bought? Sign in** on the home page: they enter the email they paid
+with, `api/request-signin.ts` looks it up in Stripe for a paid one-time
+Checkout Session and emails a one-hour sign-in link, and opening that link
+(`?signin=<token>`) re-creates the unlock via `api/verify-signin.ts`. The
+token is HMAC-signed (`server/signin.ts`), so there is still no database
+and no passwords. To turn it on:
+
+1. Create a [Resend](https://resend.com) account (the free tier is plenty),
+   **verify the domain you'll send from**, and create an API key. Without a
+   verified domain you can only send to your own address with
+   `onboarding@resend.dev` — fine for testing.
+2. Generate a signing secret, e.g. `openssl rand -hex 32`.
+3. In Vercel → Settings → Environment Variables add:
+   - `SIGNIN_SECRET` = the random string from step 2
+   - `RESEND_API_KEY` = the key from step 1
+   - `MAIL_FROM` = e.g. `Tesla Dance Revolution <signin@yourdomain.com>`
+   - `APP_URL` = your public site URL (optional; defaults to the Vercel
+     production URL, and is never taken from request headers when either is
+     set, so emails can't be pointed at another site)
+4. Redeploy.
+
+Until those are set the sign-in form says "Email sign-in isn't set up yet"
+and the receipt link from the purchase still works.
+
 ## Develop
 
 ```sh

@@ -1473,6 +1473,53 @@ input[type='range'] {
   margin-left: 6px;
 }
 
+/* --- sign-in --- */
+.linklike {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.linklike:hover {
+  color: var(--white);
+}
+
+.signin h3 {
+  margin: 0 0 6px;
+}
+
+.signin-row {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.signin-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.signin .purchase-ok {
+  margin: 10px 0;
+}
+
+.signin .btn.ghost {
+  margin-top: 6px;
+}
+
+@media (max-width: 600px) {
+  .signin-row {
+    flex-direction: column;
+  }
+}
+
 .car3d,
 .car3d canvas {
   width: 100%;

@@ -5,6 +5,7 @@ import type { Pace } from '../lib/car3d/choreo';
 import { InstallPanel } from './InstallPanel';
 import { UsbInstructions } from './UsbInstructions';
 import { QandA } from './QandA';
+import { SignIn } from './SignIn';
 import { PRICE_DISPLAY } from '../lib/price';
 import { startCheckout } from '../lib/checkout';
 import type { InstallState } from '../hooks/useInstallPrompt';
@@ -28,7 +29,11 @@ const STEPS = [
 export function Home({ install }: Props) {
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState<string | null>(null);
-  const [open, setOpen] = useState<'install' | 'usb' | null>(null);
+  const [open, setOpen] = useState<'install' | 'usb' | 'signin' | null>(null);
+  const openSignin = () => {
+    setOpen('signin');
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
   const [pace, setPace] = useState<Pace>('standard');
   const [heroMode, setHeroMode] = useState<'photo' | '3d'>('photo');
   const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
@@ -72,6 +77,9 @@ export function Home({ install }: Props) {
           <div className="hero-cta">
             {buyButton}
             <span className="hint">One-time payment · no subscription · runs on your device</span>
+            <button className="linklike" onClick={openSignin}>
+              Already bought? Sign in
+            </button>
           </div>
           {buyError && (
             <p className="hint" style={{ color: 'var(--accent-2)' }}>
@@ -143,7 +151,15 @@ export function Home({ install }: Props) {
           <button className={`btn${open === 'usb' ? ' on' : ''}`} onClick={() => setOpen(open === 'usb' ? null : 'usb')}>
             📋 Detailed instructions
           </button>
+          <button className={`btn${open === 'signin' ? ' on' : ''}`} onClick={() => setOpen(open === 'signin' ? null : 'signin')}>
+            🔑 Already bought? Sign in
+          </button>
         </div>
+        {open === 'signin' && (
+          <div className="sub-panel">
+            <SignIn onClose={() => setOpen(null)} />
+          </div>
+        )}
         {open === 'install' && (
           <div className="sub-panel">
             <InstallPanel install={install} onClose={() => setOpen(null)} />

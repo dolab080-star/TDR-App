@@ -96,14 +96,19 @@ export function DownloadPanel(p: Props) {
         </p>
       )}
       <UsbInstructions />
-      {restore && (
-        <details className="caps">
-          <summary>Setting this up on another device?</summary>
-          <p className="hint">
-            Open this link there to unlock it too — it's your receipt: <code>{restore}</code>
-          </p>
-        </details>
-      )}
+      <details className="caps">
+        <summary>Setting this up on another computer?</summary>
+        <p className="hint">
+          Open the site there, choose <b>Already bought? Sign in</b> and enter{' '}
+          {p.license.email ? <b>{p.license.email}</b> : 'the email you used at checkout'} — we'll email you a sign-in link.
+          {restore && (
+            <>
+              {' '}
+              Your receipt link works too: <code>{restore}</code>
+            </>
+          )}
+        </p>
+      </details>
     </div>
   );
 }
