@@ -93,9 +93,9 @@ export function Home({ install }: Props) {
         </div>
       )}
 
-      <section className="panel steps-section" hidden={fullPage} aria-label="It's this easy">
+      <section className="panel steps-section" hidden={fullPage} aria-label="Steps">
         <div className="peek-head">
-          <h2>It's this easy</h2>
+          <h2>Steps</h2>
           <div className="peek-nav">
             <button className="btn" onClick={() => swipeSteps(-1)} aria-label="Previous step">
               ‹

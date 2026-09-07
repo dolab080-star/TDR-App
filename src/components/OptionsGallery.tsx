@@ -21,9 +21,9 @@ export function OptionsGallery() {
     track.scrollBy({ left: dir * Math.max(240, track.clientWidth * 0.8), behavior: 'smooth' });
   };
   return (
-    <section className="peek" aria-label="What you'll be able to control">
+    <section className="peek" aria-label="Customization">
       <div className="peek-head">
-        <h2>What you'll control</h2>
+        <h2>Customization</h2>
         <div className="peek-nav">
           <button className="btn" onClick={() => step(-1)} aria-label="Previous">
             ‹

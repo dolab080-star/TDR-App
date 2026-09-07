@@ -130,9 +130,9 @@ export function DemoShowcase({ hidden = false }: Props) {
   const active = MOVES.find((m) => m.id === style)!;
 
   return (
-    <section className="panel demo" ref={sectionRef} aria-label="Three ways to move" hidden={hidden}>
+    <section className="panel demo" ref={sectionRef} aria-label="Moves" hidden={hidden}>
       <div className="demo-head">
-        <h2>Three ways to move</h2>
+        <h2>Moves</h2>
         <div className="chips" role="group" aria-label="Dance style">
           {MOVES.map((m) => (
             <button key={m.id} className={`chip${style === m.id ? ' on' : ''}`} aria-pressed={style === m.id} onClick={() => setStyle(m.id)}>

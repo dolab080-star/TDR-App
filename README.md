@@ -6,9 +6,9 @@ ready-to-copy `LightShow` folder (`.fseq` + `.wav`/`.mp3`) for a USB stick.
 
 The home page (`/`) is the storefront, kept deliberately short: the title,
 three quick links (Sign in, Q&A, Installing the app) whose panels open in
-place, a three-step "It's this easy" overview, a "Three ways to move" demo that runs the real
+place, a swipeable three-step "Steps" box, a "Moves" demo that runs the real
 generator on the built-in beat (Chill / Standard / Max, windows and liftgate
-included) in the same top-down preview the tool uses, pictures of the tool's
+included) in the same top-down preview the tool uses, a "Customization" strip of pictures of the tool's
 own Show style and Moving parts panels (`public/peek/`, captured from the
 real UI with every part expanded — retake them if those panels change), and
 the buy button. Once a purchase is verified the same URL turns into the tool
