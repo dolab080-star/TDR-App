@@ -111,7 +111,8 @@ export function Home({ install, onActivate }: Props) {
           </button>
         )}
         <p className="hint">
-          Secure checkout by Gumroad. Your license key arrives by email right away — paste it under <b>Already bought?</b> to unlock.
+          Secure checkout by Gumroad. Your license key arrives by email right away — paste it under <b>Already bought?</b> to unlock. All sales are
+          final.
         </p>
       </section>
     </div>

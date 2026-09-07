@@ -432,8 +432,8 @@ export default function App() {
 
       <footer className="footer">
         Tesla Dance Revolution is an independent, fan-made tool — not affiliated with, endorsed by, or sponsored by Tesla, Inc. Use at
-        your own risk: we assume no responsibility for vehicle damage, injury, or copyright issues arising from use of this tool. Show
-        format per{' '}
+        your own risk: we assume no responsibility for vehicle damage, injury, or copyright issues arising from use of this tool. All sales
+        are final. Show format per{' '}
         <a href="https://github.com/teslamotors/light-show" target="_blank" rel="noreferrer">
           teslamotors/light-show
         </a>

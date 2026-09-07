@@ -81,10 +81,13 @@ To turn it on:
 4. Put both into `src/lib/gumroad.ts` (`productUrl` and `productId`) and
    push. Until they are filled in the buy button says "Payments aren't set
    up yet".
+5. In the product's settings set the refund policy to **no refunds** so
+   Gumroad's checkout matches the "all sales are final" terms shown in the
+   app's Q&A and footer.
 
 `api/verify-license.ts` asks Gumroad's license endpoint whether a pasted key
 belongs to a paid, unrefunded purchase and counts one activation per
-successful check; `maxActivations` in `src/lib/gumroad.ts` (default 10)
+successful check; `maxActivations` in `src/lib/gumroad.ts` (default 3)
 stops a key that has been shared too widely. Gumroad's dashboard lists every
 sale with the buyer's email and key.
 

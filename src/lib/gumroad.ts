@@ -10,8 +10,8 @@ export const GUMROAD = {
   productUrl: '',
   /** From Gumroad: product → Content → "Generate a unique license key per sale" → Product ID */
   productId: '',
-  /** How many computers one key may unlock before it is refused. */
-  maxActivations: 10,
+  /** How many computers one key may unlock before it is refused: a laptop, a desktop and one replacement. */
+  maxActivations: 3,
 };
 
 export const isGumroadConfigured = () => GUMROAD.productUrl.length > 0 && GUMROAD.productId.length > 0;
