@@ -1275,8 +1275,29 @@ input[type='range'] {
   font-size: 22px;
 }
 
-.steps-section .steps {
+.steps-track {
+  display: flex;
+  gap: 12px;
   margin-top: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.steps-track::-webkit-scrollbar {
+  display: none;
+}
+
+.steps-track .step {
+  flex: 0 0 calc((100% - 24px) / 3);
+  scroll-snap-align: start;
+  background: var(--panel-2);
+}
+
+@media (max-width: 800px) {
+  .steps-track .step {
+    flex: 0 0 84%;
+  }
 }
 
 /* --- title --- */

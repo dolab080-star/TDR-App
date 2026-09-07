@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { OptionsGallery } from './OptionsGallery';
 import { DemoShowcase } from './DemoShowcase';
 import { InstallPanel } from './InstallPanel';
@@ -31,6 +31,11 @@ export function Home({ install }: Props) {
   const [buyError, setBuyError] = useState<string | null>(null);
   const [open, setOpen] = useState<Sub | null>(null);
   const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
+  const stepsRef = useRef<HTMLDivElement>(null);
+  const swipeSteps = (dir: 1 | -1) => {
+    const track = stepsRef.current;
+    if (track) track.scrollBy({ left: dir * Math.max(240, track.clientWidth * 0.8), behavior: 'smooth' });
+  };
   /** Q&A and Installing take over the page; Sign in is a single line and stays inline. */
   const fullPage = open === 'qa' || open === 'install';
 
@@ -88,11 +93,19 @@ export function Home({ install }: Props) {
         </div>
       )}
 
-      <DemoShowcase hidden={fullPage} />
-
-      <section className="panel steps-section" hidden={fullPage}>
-        <h2>It's this easy</h2>
-        <div className="steps">
+      <section className="panel steps-section" hidden={fullPage} aria-label="It's this easy">
+        <div className="peek-head">
+          <h2>It's this easy</h2>
+          <div className="peek-nav">
+            <button className="btn" onClick={() => swipeSteps(-1)} aria-label="Previous step">
+              ‹
+            </button>
+            <button className="btn" onClick={() => swipeSteps(1)} aria-label="Next step">
+              ›
+            </button>
+          </div>
+        </div>
+        <div className="steps-track" ref={stepsRef}>
           {STEPS.map((step, i) => (
             <div className="step" key={step.title}>
               <b>
@@ -103,6 +116,8 @@ export function Home({ install }: Props) {
           ))}
         </div>
       </section>
+
+      <DemoShowcase hidden={fullPage} />
 
       {!fullPage && <OptionsGallery />}
 
