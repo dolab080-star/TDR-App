@@ -101,17 +101,21 @@ export function DemoShowcase() {
   const brightness = useMemo(() => (show ? simulateBrightness(show.frames, show.frameCount, show.stepMs, profile.rampingChannels) : null), [show, profile]);
 
   const getTime = useCallback(() => audioRef.current?.currentTime ?? 0, []);
-  const toggle = () => {
-    const a = audioRef.current;
-    if (!a) return;
-    if (a.paused) void a.play();
-    else a.pause();
-  };
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(() => setClock(audioRef.current?.currentTime ?? 0), 200);
     return () => clearInterval(id);
   }, [playing]);
+  const toggle = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.paused) {
+      if (a.ended) a.currentTime = 0;
+      void a.play();
+    } else {
+      a.pause();
+    }
+  };
 
   const short = (s: number) => formatDuration(s).replace(/\.\d+$/, '');
   const active = MOVES.find((m) => m.id === style)!;
@@ -144,7 +148,7 @@ export function DemoShowcase() {
               Built-in beat, {analysis.bpm.toFixed(0)} BPM — the same engine that scores your songs.
             </span>
           </div>
-          <audio ref={audioRef} src={audioUrl ?? undefined} preload="auto" loop onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+          <audio ref={audioRef} src={audioUrl ?? undefined} preload="auto" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setClock(0); }} />
         </>
       ) : status === 'error' ? (
         <div className="error">The demo couldn't start in this browser. The tool itself still works — try Chrome or Edge.</div>

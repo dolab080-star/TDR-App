@@ -4,14 +4,14 @@ Drop in a song and get a Tesla Light Show generated from its beats. Everything
 runs in the browser: the audio never leaves your device, and the result is a
 ready-to-copy `LightShow` folder (`.fseq` + `.wav`/`.mp3`) for a USB stick.
 
-The home page (`/`) is the storefront: a 3D generic red 2026 Model Y built
-procedurally in three.js (`src/lib/car3d/`) whose lights flash, door windows
-slide down, liftgate opens and mirrors fold to a canned beat, quick links to
-"Installing the app", "Detailed instructions" and "Already bought? Sign in",
-a "Three ways to move" demo that runs the real generator on the built-in
-beat (Chill / Standard / Max, windows and liftgate included) in the same
-top-down preview the tool uses, the three-step process, the price with a
-buy button, and a Q&A with the non-affiliation / no-liability notice. three.js is lazy-loaded and the SVG car stands in without WebGL.
+The home page (`/`) is the storefront: the title and quick links (Sign in,
+Detailed instructions, Installing the app), the pitch with the buy button
+next to a live snippet of the tool's own Show style and Moving parts panels
+(windows, liftgate, mirrors, charge port) so visitors see what they'll
+control, a "Three ways to move" demo that runs the real generator on the
+built-in beat (Chill / Standard / Max, windows and liftgate included) in the
+same top-down preview the tool uses, the three-step process, the price with
+a buy button, and a Q&A with the non-affiliation / no-liability notice.
 Once a purchase is verified the same URL turns into the tool itself.
 
 ## How it works

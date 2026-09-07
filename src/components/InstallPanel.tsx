@@ -36,12 +36,7 @@ export function InstallPanel({ install, onClose }: Props) {
   return (
     <div className="panel install">
       <div className="songbar">
-        <div>
-          <h3 style={{ marginBottom: 4 }}>Get it as an app</h3>
-          <p className="hint" style={{ margin: 0 }}>
-            Installs like a normal app: its own icon, full screen, works offline. Not just a browser shortcut.
-          </p>
-        </div>
+        <h3 style={{ margin: 0 }}>Installing the app</h3>
         <div className="chips">
           {install.canInstall && (
             <button className="btn primary" onClick={() => void install.promptInstall()}>
@@ -73,7 +68,7 @@ export function InstallPanel({ install, onClose }: Props) {
           <li>
             Scroll down and tap <b>Add to Home Screen</b>, then <b>Add</b>.
           </li>
-          <li>Open “Light Show” from your home screen. It runs full screen and offline.</li>
+          <li>Open “TDR” from your home screen.</li>
         </ol>
       )}
       {tab === 'android' && (
@@ -105,10 +100,6 @@ export function InstallPanel({ install, onClose }: Props) {
           <li>It opens in its own window and shows up in your Start menu, Dock or Launchpad.</li>
         </ol>
       )}
-      <p className="hint">
-        Tip: on a phone, save the song file to your device first (Files app or Downloads), then pick it in the app. The finished show downloads as a zip you can
-        copy to a USB stick from a computer.
-      </p>
     </div>
   );
 }

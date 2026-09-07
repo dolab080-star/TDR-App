@@ -141,6 +141,19 @@ a {
   background: transparent;
 }
 
+.btn.big.stacked {
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 20px;
+  line-height: 1.2;
+}
+
+.btn.big.stacked small {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
 /* --- drop zone --- */
 .dropzone {
   border: 2px dashed #3a4256;
@@ -1041,136 +1054,26 @@ input[type='range'] {
   width: 100%;
 }
 
-.hero-car-wrap {
-  display: grid;
-  place-items: center;
-}
-
-.animated-car {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.hero-car {
-  max-width: 230px;
-  filter: drop-shadow(0 24px 40px rgba(232, 33, 39, 0.35));
-  animation: car-bob 3.2s ease-in-out infinite;
-}
-
-.animated-car .lamp {
-  opacity: 0.22;
-}
-
 /* Chill: slow synchronized breathing, tails steady, no strobes. */
 .pace-chill .side-left,
-.pace-chill .side-right {
-  animation: lamp-breathe 2.6s ease-in-out infinite;
-}
 .pace-chill .tail-left,
 .pace-chill .tail-right {
   opacity: 0.7;
 }
-.pace-chill .brake {
-  animation: lamp-breathe 2.6s ease-in-out infinite 1.3s;
-}
-
 /* Standard: left/right alternate on the beat, brake pulses twice as fast. */
 .pace-standard .side-left,
 .pace-standard .turn-left,
-.pace-standard .tail-left {
-  animation: lamp-flash 0.86s steps(1) infinite;
-}
 .pace-standard .side-right,
 .pace-standard .turn-right,
-.pace-standard .tail-right {
-  animation: lamp-flash 0.86s steps(1) infinite 0.43s;
-}
-.pace-standard .brake {
-  animation: lamp-pulse 0.43s ease-in-out infinite;
-}
-
 /* Max: rapid full strobe, turn signals off-phase, a little shake. */
 .pace-max .side-left,
 .pace-max .side-right,
 .pace-max .tail-left,
 .pace-max .tail-right,
-.pace-max .brake {
-  animation: lamp-strobe 0.2s steps(1) infinite;
-}
 .pace-max .turn-left,
-.pace-max .turn-right {
-  animation: lamp-strobe 0.2s steps(1) infinite 0.1s;
-}
 .pace-max .car-body {
   transform-origin: 150px 280px;
   animation: car-shake 0.4s ease-in-out infinite;
-}
-
-@keyframes lamp-breathe {
-  0%,
-  100% {
-    opacity: 0.22;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@keyframes lamp-flash {
-  0%,
-  46% {
-    opacity: 1;
-  }
-  47%,
-  100% {
-    opacity: 0.18;
-  }
-}
-@keyframes lamp-pulse {
-  0%,
-  100% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@keyframes lamp-strobe {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0.12;
-  }
-}
-@keyframes car-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(3px);
-  }
-}
-@keyframes car-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animated-car .lamp,
-  .animated-car .car-body,
-  .hero-car {
-    animation: none !important;
-    opacity: 0.85;
-  }
 }
 
 /* --- steps / pricing / sub-actions --- */
@@ -1240,6 +1143,13 @@ input[type='range'] {
 }
 
 /* --- Q&A --- */
+.sub-panel .qanda {
+  border: none;
+  background: transparent;
+  padding: 14px 0 4px;
+  margin: 0;
+}
+
 .qanda {
   margin-top: 18px;
 }
@@ -1267,26 +1177,8 @@ input[type='range'] {
   line-height: 1.55;
 }
 
-/* --- 3D hero car --- */
 .home .hero {
   grid-template-columns: minmax(0, 1fr) minmax(280px, 1.15fr);
-}
-
-.hero-car-wrap {
-  gap: 10px;
-  width: 100%;
-}
-
-.hero-media {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  aspect-ratio: 4 / 3;
-  border-radius: 20px;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(ellipse at 50% 60%, rgba(232, 33, 39, 0.16), transparent 62%);
 }
 
 .sub-header {
@@ -1295,6 +1187,22 @@ input[type='range'] {
 
 .sub-header + .sub-panel {
   margin: 0 0 14px;
+}
+
+/* --- options peek (hero) --- */
+.hero-peek {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hero-peek .panel {
+  box-shadow: var(--shadow);
+}
+
+.hero-peek-label {
+  text-align: center;
+  margin: 0;
 }
 
 /* --- title --- */
@@ -1373,35 +1281,8 @@ input[type='range'] {
   }
 }
 
-.car3d,
-.car3d canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.car3d {
-  cursor: grab;
-  touch-action: pan-y;
-}
-
-.car3d:active {
-  cursor: grabbing;
-}
-
-.hero-media .hero-car {
-  max-width: 200px;
-  margin: 0 auto;
-}
-
 @media (max-width: 800px) {
   .home .hero {
     grid-template-columns: 1fr;
-  }
-  .hero-car {
-    max-width: 180px;
-  }
-  .hero-media {
-    max-width: none;
   }
 }

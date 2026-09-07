@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HeroCar } from './HeroCar';
+import { OptionsPeek } from './OptionsPeek';
 import { DemoShowcase } from './DemoShowcase';
 import { InstallPanel } from './InstallPanel';
 import { UsbInstructions } from './UsbInstructions';
@@ -17,7 +17,7 @@ type Sub = 'install' | 'usb' | 'signin';
 
 const SUBS: { id: Sub; label: string }[] = [
   { id: 'signin', label: '🔑 Already bought? Sign in' },
-  { id: 'usb', label: '📋 Detailed instructions' },
+  { id: 'usb', label: '📋 Instructions & Q&A' },
   { id: 'install', label: '📲 Installing the app' },
 ];
 
@@ -79,6 +79,7 @@ export function Home({ install }: Props) {
             Several shows on one stick need 2023.44.25+. Park with room around the car before running a show with moving
             parts.
           </p>
+          <QandA />
           <button className="btn ghost" onClick={() => setOpen(null)}>
             Close
           </button>
@@ -97,13 +98,12 @@ export function Home({ install }: Props) {
       <section className="hero">
         <div className="hero-copy">
           <h2>Your car, dancing</h2>
-          <p className="hero-sub">
-            Drop any track in and get a beat-synced Tesla light show — headlights, turn signals, even the mirrors and
-            windows — timed to every kick, snare and drop.
-          </p>
+          <p className="hero-sub">Drop any track in and get a beat-synced light show</p>
           <div className="hero-cta">
-            {buyButton}
-            <span className="hint">One-time payment · no subscription</span>
+            <button className="btn primary big stacked" onClick={buy} disabled={buying}>
+              <span>{buying ? 'Redirecting to secure checkout…' : `Buy now — ${PRICE_DISPLAY}`}</span>
+              <small>One-time payment · no subscription</small>
+            </button>
           </div>
           {buyError && (
             <p className="hint" style={{ color: 'var(--accent-2)' }}>
@@ -111,11 +111,7 @@ export function Home({ install }: Props) {
             </p>
           )}
         </div>
-        <div className="hero-car-wrap">
-          <div className="hero-media">
-            <HeroCar />
-          </div>
-        </div>
+        <OptionsPeek />
       </section>
 
       <DemoShowcase />
@@ -155,8 +151,6 @@ export function Home({ install }: Props) {
         )}
         <p className="hint">Secure checkout by Stripe. Your song and show never leave your device — only the payment does.</p>
       </section>
-
-      <QandA />
     </div>
   );
 }
