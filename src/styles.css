@@ -1299,81 +1299,39 @@ input[type='range'] {
   margin: 0;
 }
 
-/* --- title --- */
-.title-caps span {
-  color: var(--accent);
-}
-
-/* --- demo: the real generator on the built-in beat --- */
-.demo-head {
-  display: flex;
+/* --- demo preview: compact, car and status side by side at every width --- */
+.demo .preview {
+  grid-template-columns: minmax(0, 150px) 1fr;
+  gap: 14px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
 }
 
-.demo-head h2 {
-  margin: 0;
-  font-size: 22px;
+.demo .car-wrap {
+  padding: 0;
 }
 
-.demo .chips .chip {
-  padding: 6px 16px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+.demo .car {
+  max-width: 150px;
 }
 
-.demo .chips .chip:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.demo .chips .chip.on {
-  background: rgba(232, 33, 39, 0.18);
-  border-color: rgba(232, 33, 39, 0.6);
-  color: var(--white);
-  font-weight: 600;
-}
-
-.demo-desc {
-  color: var(--muted);
-  margin: 8px 0 14px;
-}
-
-.demo .progress {
-  border: none;
-  background: var(--bg-2);
-}
-
-/* --- sign-in --- */
-.signin h3 {
-  margin: 0 0 6px;
-}
-
-.signin-row {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0;
-}
-
-.signin-row input {
-  flex: 1;
-  min-width: 0;
-}
-
-.signin .purchase-ok {
-  margin: 10px 0;
-}
-
-.signin .btn.ghost {
-  margin-top: 6px;
+.demo .preview > div > .hint {
+  display: none;
 }
 
 @media (max-width: 600px) {
-  .signin-row {
-    flex-direction: column;
+  .demo .preview {
+    grid-template-columns: minmax(0, 112px) 1fr;
+    gap: 10px;
   }
-}
-
-@media (max-width: 800px) {
+  .demo .car {
+    max-width: 112px;
+  }
+  .demo .legend {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    font-size: 12px;
+  }
+  .demo .legend .row {
+    padding: 3px 6px;
+  }
 }
