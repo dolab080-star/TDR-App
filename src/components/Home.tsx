@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { AnimatedCar } from './AnimatedCar';
+import { HeroCar } from './HeroCar';
 import { StyleShowcase } from './StyleShowcase';
+import type { Pace } from '../lib/car3d/choreo';
 import { InstallPanel } from './InstallPanel';
 import { UsbInstructions } from './UsbInstructions';
 import { QandA } from './QandA';
@@ -12,6 +13,12 @@ interface Props {
   install: InstallState;
 }
 
+const PACES: { id: Pace; label: string }[] = [
+  { id: 'chill', label: 'Chill' },
+  { id: 'standard', label: 'Standard' },
+  { id: 'max', label: 'Max' },
+];
+
 const STEPS = [
   { title: 'Add your song', desc: 'Drop in an MP3 or WAV, or paste a YouTube link to name the show. Nothing is uploaded anywhere.' },
   { title: 'Preview & customize', desc: 'Watch it dance on your exact Tesla model, pick Chill, Standard or Max, tune mirrors, windows and liftgate.' },
@@ -22,6 +29,8 @@ export function Home({ install }: Props) {
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState<string | null>(null);
   const [open, setOpen] = useState<'install' | 'usb' | null>(null);
+  const [pace, setPace] = useState<Pace>('standard');
+  const [heroMode, setHeroMode] = useState<'photo' | '3d'>('photo');
   const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
 
   const buy = async () => {
@@ -70,8 +79,23 @@ export function Home({ install }: Props) {
             </p>
           )}
         </div>
-        <div className="hero-car-wrap" aria-hidden="true">
-          <AnimatedCar pace="standard" className="hero-car" label="A red Tesla Model Y with its lights dancing" />
+        <div className="hero-car-wrap">
+          <div className={`hero-media${heroMode === '3d' ? ' is-3d' : ''}`}>
+            <HeroCar pace={pace} mode={heroMode} />
+          </div>
+          <div className="pace-chips" role="group" aria-label="Dance intensity">
+            {PACES.map((p) => (
+              <button key={p.id} className={`chip${pace === p.id ? ' on' : ''}`} aria-pressed={pace === p.id} onClick={() => setPace(p.id)}>
+                {p.label}
+              </button>
+            ))}
+            <button className="chip mode-chip" aria-pressed={heroMode === '3d'} onClick={() => setHeroMode(heroMode === '3d' ? 'photo' : '3d')}>
+              {heroMode === '3d' ? '📷 Photo' : '🧊 Spin it in 3D'}
+            </button>
+          </div>
+          <p className="hint hero-3d-hint">
+            {heroMode === '3d' ? 'Generic 2026 Model Y · drag to spin · no sound, just the moves' : '2026 Model Y · no sound, just the moves'}
+          </p>
         </div>
       </section>
 
