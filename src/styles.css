@@ -1334,4 +1334,15 @@ input[type='range'] {
   .demo .legend .row {
     padding: 3px 6px;
   }
+  .demo .transport .hint {
+    display: none;
+  }
+}
+
+.demo .transport {
+  flex-wrap: wrap;
+}
+
+.demo .transport .btn {
+  white-space: nowrap;
 }
