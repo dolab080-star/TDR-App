@@ -1270,6 +1270,15 @@ input[type='range'] {
   max-width: 420px;
 }
 
+.steps-section h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.steps-section .steps {
+  margin-top: 14px;
+}
+
 /* --- title --- */
 .title-caps span {
   color: var(--accent);

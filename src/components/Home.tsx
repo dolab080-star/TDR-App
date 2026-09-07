@@ -15,6 +15,12 @@ interface Props {
 
 type Sub = 'install' | 'usb' | 'signin';
 
+const STEPS = [
+  { title: 'Upload your song', desc: 'Drop in any MP3 or WAV.' },
+  { title: 'Pick your dance moves', desc: 'Choose from the provided dance moves, or customize every light and moving part to your liking.' },
+  { title: 'Plug in and dance', desc: 'Download onto your USB stick, plug it into your car and dance away.' },
+];
+
 const SUBS: { id: Sub; icon: string; label: string; short: string }[] = [
   { id: 'signin', icon: '🔑', label: 'Already bought? Sign in', short: 'Sign in' },
   { id: 'usb', icon: '📋', label: 'Instructions & Q&A', short: 'Instructions & Q&A' },
@@ -88,6 +94,20 @@ export function Home({ install }: Props) {
       )}
 
       <DemoShowcase hidden={fullPage} />
+
+      <section className="panel steps-section" hidden={fullPage}>
+        <h2>It's this easy</h2>
+        <div className="steps">
+          {STEPS.map((step, i) => (
+            <div className="step" key={step.title}>
+              <b>
+                {i + 1}. {step.title}
+              </b>
+              <span>{step.desc}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {!fullPage && <OptionsGallery />}
 
