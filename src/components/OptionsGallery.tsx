@@ -21,7 +21,7 @@ export function OptionsGallery() {
     track.scrollBy({ left: dir * Math.max(240, track.clientWidth * 0.8), behavior: 'smooth' });
   };
   return (
-    <section className="peek" aria-label="Customization">
+    <section className="panel peek" aria-label="Customization">
       <div className="peek-head">
         <h2>Customization</h2>
         <div className="peek-nav">

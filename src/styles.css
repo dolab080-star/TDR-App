@@ -1023,6 +1023,12 @@ input[type='range'] {
 }
 
 /* --- home / marketing page --- */
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 /* Chill: slow synchronized breathing, tails steady, no strobes. */
 .pace-chill .side-left,
 .pace-chill .tail-left,
@@ -1133,7 +1139,7 @@ input[type='range'] {
 }
 
 .sub-header {
-  margin: 0 0 6px;
+  margin: 0;
 }
 
 .sub-header .btn {
@@ -1174,7 +1180,7 @@ input[type='range'] {
 }
 
 .sub-header + .sub-panel {
-  margin: 0 0 14px;
+  margin: 0;
 }
 
 /* --- options pictures (hero) --- */
@@ -1226,7 +1232,7 @@ input[type='range'] {
   flex: 0 0 min(100%, 380px);
   scroll-snap-align: start;
   margin: 0;
-  background: var(--panel);
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
