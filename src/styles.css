@@ -26,6 +26,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -1114,17 +1118,9 @@ input[type='range'] {
 
 @media (max-width: 600px) {
   .sub-header {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-  .sub-header::-webkit-scrollbar {
-    display: none;
+    gap: 6px;
   }
   .sub-header .btn {
-    flex: 0 0 auto;
     white-space: nowrap;
     padding: 8px 10px;
     font-size: 13px;

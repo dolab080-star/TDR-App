@@ -34,7 +34,12 @@ type Status = 'idle' | 'loading' | 'ready' | 'error';
  * synthesized track and the top-down preview shows lights, windows and
  * liftgate exactly as the exported show would drive them.
  */
-export function DemoShowcase() {
+interface Props {
+  /** Hidden while a full-page panel is open; the beat pauses and the section stays mounted. */
+  hidden?: boolean;
+}
+
+export function DemoShowcase({ hidden = false }: Props) {
   const runAnalysis = useAnalysisWorker();
   const sectionRef = useRef<HTMLElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -117,11 +122,15 @@ export function DemoShowcase() {
     }
   };
 
+  useEffect(() => {
+    if (hidden) audioRef.current?.pause();
+  }, [hidden]);
+
   const short = (s: number) => formatDuration(s).replace(/\.\d+$/, '');
   const active = MOVES.find((m) => m.id === style)!;
 
   return (
-    <section className="panel demo" ref={sectionRef} aria-label="Three ways to move">
+    <section className="panel demo" ref={sectionRef} aria-label="Three ways to move" hidden={hidden}>
       <div className="demo-head">
         <h2>Three ways to move</h2>
         <div className="chips" role="group" aria-label="Dance style">

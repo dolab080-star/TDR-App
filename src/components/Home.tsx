@@ -26,6 +26,8 @@ export function Home({ install }: Props) {
   const [buyError, setBuyError] = useState<string | null>(null);
   const [open, setOpen] = useState<Sub | null>(null);
   const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
+  /** Instructions and Installing take over the page; Sign in is a single line and stays inline. */
+  const fullPage = open === 'usb' || open === 'install';
 
   const buy = async () => {
     setBuying(true);
@@ -70,7 +72,7 @@ export function Home({ install }: Props) {
         </div>
       )}
 
-      {canceled && (
+      {canceled && !fullPage && (
         <div className="error">
           <div>Checkout was canceled — you were not charged. Ready when you are.</div>
           <button className="btn ghost" onClick={() => setCanceled(false)}>
@@ -79,11 +81,11 @@ export function Home({ install }: Props) {
         </div>
       )}
 
-      <DemoShowcase />
+      <DemoShowcase hidden={fullPage} />
 
-      <OptionsGallery />
+      {!fullPage && <OptionsGallery />}
 
-      <section className="buy-section" id="pricing">
+      <section className="buy-section" id="pricing" hidden={fullPage}>
         <button className="btn primary big stacked" onClick={buy} disabled={buying}>
           <span>{buying ? 'Redirecting to secure checkout…' : `Buy now — ${PRICE_DISPLAY}`}</span>
           <small>One-time payment · no subscription</small>
