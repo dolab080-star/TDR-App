@@ -66,9 +66,11 @@ export function Home({ install }: Props) {
         </div>
       )}
       {open === 'usb' && (
-        <div className="sub-panel panel">
-          <h3>Putting a finished show on your car</h3>
-          <UsbInstructions />
+        <div className="sub-panel sub-stack">
+          <div className="panel">
+            <h3>Putting a finished show on your car</h3>
+            <UsbInstructions />
+          </div>
           <QandA />
           <button className="btn ghost" onClick={() => setOpen(null)}>
             Close

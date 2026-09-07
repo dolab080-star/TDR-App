@@ -1093,11 +1093,16 @@ input[type='range'] {
 }
 
 /* --- Q&A --- */
-.sub-panel .qanda {
-  border: none;
-  background: transparent;
-  padding: 14px 0 4px;
-  margin: 0;
+.sub-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sub-stack > .panel,
+.sub-stack > .qanda {
+  width: 100%;
 }
 
 .qanda {
