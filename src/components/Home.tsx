@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { OptionsGallery } from './OptionsGallery';
 import { DemoShowcase } from './DemoShowcase';
 import { InstallPanel } from './InstallPanel';
-import { UsbInstructions } from './UsbInstructions';
 import { QandA } from './QandA';
 import { SignIn } from './SignIn';
 import { PRICE_DISPLAY } from '../lib/price';
@@ -13,7 +12,7 @@ interface Props {
   install: InstallState;
 }
 
-type Sub = 'install' | 'usb' | 'signin';
+type Sub = 'install' | 'qa' | 'signin';
 
 const STEPS = [
   { title: 'Upload your song', desc: 'Drop in any MP3 or WAV.' },
@@ -23,7 +22,7 @@ const STEPS = [
 
 const SUBS: { id: Sub; icon: string; label: string; short: string }[] = [
   { id: 'signin', icon: '🔑', label: 'Already bought? Sign in', short: 'Sign in' },
-  { id: 'usb', icon: '📋', label: 'Instructions & Q&A', short: 'Instructions & Q&A' },
+  { id: 'qa', icon: '❓', label: 'Q&A', short: 'Q&A' },
   { id: 'install', icon: '📲', label: 'Installing the app', short: 'Install app' },
 ];
 
@@ -32,8 +31,8 @@ export function Home({ install }: Props) {
   const [buyError, setBuyError] = useState<string | null>(null);
   const [open, setOpen] = useState<Sub | null>(null);
   const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
-  /** Instructions and Installing take over the page; Sign in is a single line and stays inline. */
-  const fullPage = open === 'usb' || open === 'install';
+  /** Q&A and Installing take over the page; Sign in is a single line and stays inline. */
+  const fullPage = open === 'qa' || open === 'install';
 
   const buy = async () => {
     setBuying(true);
@@ -71,12 +70,8 @@ export function Home({ install }: Props) {
           <InstallPanel install={install} onClose={() => setOpen(null)} />
         </div>
       )}
-      {open === 'usb' && (
+      {open === 'qa' && (
         <div className="sub-panel sub-stack">
-          <div className="panel">
-            <h3>Putting a finished show on your car</h3>
-            <UsbInstructions />
-          </div>
           <QandA />
           <button className="btn ghost" onClick={() => setOpen(null)}>
             Close

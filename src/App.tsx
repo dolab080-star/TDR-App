@@ -10,6 +10,7 @@ import { DownloadPanel, type AudioChoice } from './components/DownloadPanel';
 import { InstallPanel } from './components/InstallPanel';
 import { YouTubeLink } from './components/YouTubeLink';
 import { PurchaseBanner } from './components/PurchaseBanner';
+import { UsbInstructions } from './components/UsbInstructions';
 import { Home } from './components/Home';
 import { useAnalysisWorker, type AnalysisProgress } from './hooks/useAnalysisWorker';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
@@ -75,6 +76,7 @@ export default function App() {
   const [playing, setPlaying] = useState(false);
   const [video, setVideo] = useState<LinkedVideo | null>(null);
   const [showInstall, setShowInstall] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const runAnalysis = useAnalysisWorker();
   const install = useInstallPrompt();
@@ -265,6 +267,9 @@ export default function App() {
                 ⬇ Install app
               </button>
             )}
+            <button className="btn" onClick={() => setShowInstructions((v) => !v)} aria-expanded={showInstructions}>
+              📋 Instructions
+            </button>
             {phase.kind === 'ready' && (
               <button className="btn" onClick={reset}>
                 ↺ New song
@@ -285,6 +290,17 @@ export default function App() {
         <Home install={install} />
       ) : (
         <>
+          {showInstructions && (
+            <div className="panel instructions">
+              <div className="songbar">
+                <h3 style={{ margin: 0 }}>Putting a finished show on your car</h3>
+                <button className="btn ghost" onClick={() => setShowInstructions(false)}>
+                  Close
+                </button>
+              </div>
+              <UsbInstructions />
+            </div>
+          )}
           {(showInstall || (phase.kind === 'idle' && !install.installed)) && <InstallPanel install={install} onClose={showInstall ? () => setShowInstall(false) : undefined} />}
 
           {/* Kept mounted (hidden) outside "idle" so a metadata lookup started just
