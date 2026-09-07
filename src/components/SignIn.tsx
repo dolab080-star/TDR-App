@@ -20,17 +20,24 @@ export function SignIn({ onClose }: Props) {
 
   return (
     <div className="panel signin">
-      <h3>Already bought? Sign in</h3>
-      <p className="hint">
-        Enter the email you used at checkout and we'll send you a sign-in link — it unlocks this computer, no password needed.
-      </p>
       {state === 'sent' ? (
-        <p className="purchase-ok" role="status">
-          {message}
-        </p>
+        <div className="signin-row">
+          <p className="purchase-ok" role="status">
+            {message}
+          </p>
+          {onClose && (
+            <button className="btn ghost" type="button" onClick={onClose}>
+              Close
+            </button>
+          )}
+        </div>
       ) : (
         <form className="signin-row" onSubmit={submit}>
+          <label className="signin-label" htmlFor="signin-email">
+            🔑 Already bought? Enter the email you paid with:
+          </label>
           <input
+            id="signin-email"
             className="select"
             type="email"
             required
@@ -38,23 +45,22 @@ export function SignIn({ onClose }: Props) {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            aria-label="Purchase email"
             disabled={state === 'sending'}
           />
           <button className="btn primary" type="submit" disabled={state === 'sending' || !email.trim()}>
             {state === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
           </button>
+          {onClose && (
+            <button className="btn ghost" type="button" onClick={onClose}>
+              Close
+            </button>
+          )}
         </form>
       )}
       {state === 'error' && (
-        <p className="hint" style={{ color: 'var(--accent-2)' }} role="alert">
+        <p className="hint" style={{ color: 'var(--accent-2)', margin: '8px 0 0' }} role="alert">
           {message}
         </p>
-      )}
-      {onClose && (
-        <button className="btn ghost" onClick={onClose}>
-          Close
-        </button>
       )}
     </div>
   );

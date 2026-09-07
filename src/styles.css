@@ -918,17 +918,6 @@ input[type='range'] {
   margin: 0 0 10px;
 }
 
-.pricing-hero {
-  text-align: center;
-  padding: 40px 24px;
-}
-
-.pricing-hero h2 {
-  font-size: clamp(28px, 4vw, 38px);
-  margin: 0 0 16px;
-  letter-spacing: -0.01em;
-}
-
 .pricing-hero h2 span {
   color: var(--accent-2);
 }
@@ -939,11 +928,6 @@ input[type='range'] {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.55;
-}
-
-.pricing-hero .btn.big {
-  max-width: 320px;
-  margin: 0 auto;
 }
 
 
@@ -1020,40 +1004,6 @@ input[type='range'] {
 }
 
 /* --- home / marketing page --- */
-.home .hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
-  gap: 28px;
-  align-items: center;
-  padding: 18px 0 8px;
-}
-
-.hero-copy h2 {
-  font-size: clamp(28px, 4vw, 42px);
-  line-height: 1.1;
-  margin: 0 0 14px;
-  letter-spacing: -0.015em;
-}
-
-.hero-sub {
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.6;
-  margin: 0 0 20px;
-  max-width: 52ch;
-}
-
-.hero-cta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 340px;
-}
-
-.hero-cta .btn.big {
-  width: 100%;
-}
-
 /* Chill: slow synchronized breathing, tails steady, no strobes. */
 .pace-chill .side-left,
 .pace-chill .tail-left,
@@ -1078,27 +1028,8 @@ input[type='range'] {
 
 /* --- steps / pricing / sub-actions --- */
 .steps-section h2,
-.pricing-hero h2 {
-  margin-top: 0;
-}
-
-.steps-section h2 {
-  font-size: 22px;
-  margin-bottom: 14px;
-}
-
 .steps-section .steps {
   margin-top: 0;
-}
-
-.price-accent {
-  color: var(--accent-2);
-}
-
-.pricing-list {
-  max-width: 480px;
-  margin: 0 auto 22px;
-  text-align: left;
 }
 
 .sub-actions {
@@ -1177,31 +1108,198 @@ input[type='range'] {
   line-height: 1.55;
 }
 
-.home .hero {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 1.15fr);
-}
-
 .sub-header {
   margin: 0 0 6px;
+}
+
+@media (max-width: 600px) {
+  .sub-header {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .sub-header::-webkit-scrollbar {
+    display: none;
+  }
+  .sub-header .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }
 
 .sub-header + .sub-panel {
   margin: 0 0 14px;
 }
 
-/* --- options peek (hero) --- */
-.hero-peek {
+/* --- options pictures (hero) --- */
+.peek {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
-.hero-peek .panel {
+.peek-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.peek-head h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.peek-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.peek-nav .btn {
+  padding: 4px 12px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.peek-track {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  border-radius: var(--radius);
+}
+
+.peek-track::-webkit-scrollbar {
+  display: none;
+}
+
+.peek-card {
+  flex: 0 0 min(100%, 380px);
+  scroll-snap-align: start;
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
   box-shadow: var(--shadow);
 }
 
-.hero-peek-label {
+.peek-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--border);
+  pointer-events: none;
+}
+
+.peek-card figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px 12px;
+  font-size: 14px;
+}
+
+.peek-card figcaption span {
+  color: var(--muted);
+}
+
+.peek-hint {
+  margin: 0;
   text-align: center;
+}
+
+.buy-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 10px;
+}
+
+.buy-section .btn.big {
+  max-width: 420px;
+}
+
+/* --- title --- */
+.title-caps span {
+  color: var(--accent);
+}
+
+/* --- demo: the real generator on the built-in beat --- */
+.demo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.demo-head h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.demo .chips .chip {
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.demo .chips .chip:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.demo .chips .chip.on {
+  background: rgba(232, 33, 39, 0.18);
+  border-color: rgba(232, 33, 39, 0.6);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.demo-desc {
+  color: var(--muted);
+  margin: 8px 0 14px;
+}
+
+.demo .progress {
+  border: none;
+  background: var(--bg-2);
+}
+
+/* --- sign-in --- */
+.signin {
+  padding: 12px 14px;
+}
+
+.signin-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.signin-label {
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.signin-row input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.signin .purchase-ok {
+  flex: 1 1 240px;
   margin: 0;
 }
 
@@ -1282,7 +1380,4 @@ input[type='range'] {
 }
 
 @media (max-width: 800px) {
-  .home .hero {
-    grid-template-columns: 1fr;
-  }
 }

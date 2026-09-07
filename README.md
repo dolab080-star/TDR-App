@@ -4,15 +4,15 @@ Drop in a song and get a Tesla Light Show generated from its beats. Everything
 runs in the browser: the audio never leaves your device, and the result is a
 ready-to-copy `LightShow` folder (`.fseq` + `.wav`/`.mp3`) for a USB stick.
 
-The home page (`/`) is the storefront: the title and quick links (Sign in,
-Detailed instructions, Installing the app), the pitch with the buy button
-next to a live snippet of the tool's own Show style and Moving parts panels
-(windows, liftgate, mirrors, charge port) so visitors see what they'll
-control, a "Three ways to move" demo that runs the real generator on the
-built-in beat (Chill / Standard / Max, windows and liftgate included) in the
-same top-down preview the tool uses, the three-step process, the price with
-a buy button, and a Q&A with the non-affiliation / no-liability notice.
-Once a purchase is verified the same URL turns into the tool itself.
+The home page (`/`) is the storefront, kept deliberately short: the title,
+three quick links (Sign in, Instructions & Q&A, Installing the app) whose
+panels open in place, a "Three ways to move" demo that runs the real
+generator on the built-in beat (Chill / Standard / Max, windows and liftgate
+included) in the same top-down preview the tool uses, pictures of the tool's
+own Show style and Moving parts panels (`public/peek/`, captured from the
+real UI with every part expanded — retake them if those panels change), and
+the buy button. Once a purchase is verified the same URL turns into the tool
+itself.
 
 ## How it works
 
