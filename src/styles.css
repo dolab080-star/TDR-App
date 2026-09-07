@@ -1131,14 +1131,40 @@ input[type='range'] {
   margin: 0 0 6px;
 }
 
+.sub-header .btn {
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.sub-header .label-short {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .sub-header {
+    flex-wrap: nowrap;
     gap: 6px;
   }
   .sub-header .btn {
-    white-space: nowrap;
-    padding: 8px 10px;
-    font-size: 13px;
+    padding: 8px 8px;
+    font-size: 12.5px;
+    gap: 4px;
+  }
+  .sub-header .label-full {
+    display: none;
+  }
+  .sub-header .label-short {
+    display: inline;
+  }
+}
+
+@media (max-width: 360px) {
+  .sub-header .btn {
+    font-size: 11.5px;
+    padding: 7px 6px;
+  }
+  .sub-header .emoji {
+    display: none;
   }
 }
 

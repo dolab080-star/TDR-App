@@ -15,10 +15,10 @@ interface Props {
 
 type Sub = 'install' | 'usb' | 'signin';
 
-const SUBS: { id: Sub; label: string }[] = [
-  { id: 'signin', label: '🔑 Already bought? Sign in' },
-  { id: 'usb', label: '📋 Instructions & Q&A' },
-  { id: 'install', label: '📲 Installing the app' },
+const SUBS: { id: Sub; icon: string; label: string; short: string }[] = [
+  { id: 'signin', icon: '🔑', label: 'Already bought? Sign in', short: 'Sign in' },
+  { id: 'usb', icon: '📋', label: 'Instructions & Q&A', short: 'Instructions & Q&A' },
+  { id: 'install', icon: '📲', label: 'Installing the app', short: 'Install app' },
 ];
 
 export function Home({ install }: Props) {
@@ -46,8 +46,12 @@ export function Home({ install }: Props) {
     <div className="home">
       <nav className="sub-actions sub-header" aria-label="Quick links">
         {SUBS.map((s) => (
-          <button key={s.id} className={`btn${open === s.id ? ' on' : ''}`} aria-expanded={open === s.id} onClick={() => setOpen(open === s.id ? null : s.id)}>
-            {s.label}
+          <button key={s.id} className={`btn${open === s.id ? ' on' : ''}`} aria-expanded={open === s.id} aria-label={s.label} onClick={() => setOpen(open === s.id ? null : s.id)}>
+            <span className="emoji" aria-hidden="true">
+              {s.icon}
+            </span>
+            <span className="label-full">{s.label}</span>
+            <span className="label-short">{s.short}</span>
           </button>
         ))}
       </nav>
