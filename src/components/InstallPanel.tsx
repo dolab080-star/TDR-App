@@ -100,7 +100,7 @@ export function InstallPanel({ install, onClose }: Props) {
             In <b>Chrome</b> or <b>Edge</b>, click the install icon at the right end of the address bar (a monitor with a down arrow).
           </li>
           <li>
-            Or open the browser menu and choose <b>Install Tesla Light Show Maker</b> / <b>Apps → Install this site as an app</b>.
+            Or open the browser menu and choose <b>Install Tesla Dance Revolution</b> / <b>Apps → Install this site as an app</b>.
           </li>
           <li>It opens in its own window and shows up in your Start menu, Dock or Launchpad.</li>
         </ol>

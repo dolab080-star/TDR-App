@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/?purchase=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/pricing.html?canceled=1`,
+      cancel_url: `${origin}/?canceled=1`,
       allow_promotion_codes: true,
     });
     if (!session.url) throw new Error('Stripe did not return a checkout URL');

@@ -4,5 +4,4 @@
  * (STRIPE_PRICE_ID). Keep this in sync with that Price so the pricing page
  * never shows a number Stripe doesn't charge.
  */
-export const PRICE_DISPLAY = '$7';
-export const PRODUCT_NAME = 'Tesla Light Show Maker — Full Unlock';
+export const PRICE_DISPLAY = '$6.90';

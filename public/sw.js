@@ -1,5 +1,5 @@
-/* Tesla Light Show Maker service worker: app shell + hashed assets offline. */
-const VERSION = 'lightshow-v1';
+/* Tesla Dance Revolution service worker: app shell + hashed assets offline. */
+const VERSION = 'tdr-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 const MAX_ASSETS = 60;
 

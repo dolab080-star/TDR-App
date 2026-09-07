@@ -81,7 +81,7 @@ export function encodeFseq(frames: Uint8Array, opts: EncodeFseqOptions): Uint8Ar
 
   const vars: Uint8Array[] = [];
   if (opts.mediaFile) vars.push(varHeader('mf', opts.mediaFile));
-  vars.push(varHeader('sp', opts.producer ?? 'Tesla Light Show Maker'));
+  vars.push(varHeader('sp', opts.producer ?? 'Tesla Dance Revolution'));
   const varLen = vars.reduce((n, v) => n + v.length, 0);
 
   let dataOffset = FIXED_HEADER_LEN + varLen;

@@ -895,9 +895,6 @@ input[type='range'] {
   word-break: break-all;
 }
 
-.pricing-page .header .brand p {
-  display: none;
-}
 
 .eyebrow {
   text-transform: uppercase;
@@ -936,22 +933,8 @@ input[type='range'] {
   margin: 0 auto;
 }
 
-.compare {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 18px;
-}
 
-.compare-col h3 {
-  margin: 0 0 14px;
-  font-size: 16px;
-}
 
-.compare-col--full {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent) inset;
-}
 
 .check-list {
   list-style: none;
@@ -977,36 +960,399 @@ input[type='range'] {
   font-weight: 700;
 }
 
-.faq {
-  margin-top: 18px;
+
+
+
+
+
+
+.site-tag {
+  margin: 0 0 10px;
 }
 
-.faq dl {
+/* --- centered header --- */
+.header-centered {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  position: relative;
+  padding-top: 4px;
+}
+
+.header-centered .site-tag {
   margin: 0;
+  color: var(--accent-2);
+  font-size: 13px;
+  letter-spacing: 0.22em;
 }
 
-.faq dt {
-  font-weight: 600;
-  margin-top: 14px;
+.header-centered h1 {
+  font-size: clamp(26px, 4.5vw, 40px);
+  margin: 0;
+  letter-spacing: -0.01em;
 }
 
-.faq dt:first-child {
+.header-centered .tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.header-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 700px) {
+  .header-corner {
+    position: static;
+    order: 10;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* --- home / marketing page --- */
+.home .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  gap: 28px;
+  align-items: center;
+  padding: 18px 0 8px;
+}
+
+.hero-copy h2 {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  margin: 0 0 14px;
+  letter-spacing: -0.015em;
+}
+
+.hero-sub {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+  max-width: 52ch;
+}
+
+.hero-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 340px;
+}
+
+.hero-cta .btn.big {
+  width: 100%;
+}
+
+.hero-car-wrap {
+  display: grid;
+  place-items: center;
+}
+
+.animated-car {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hero-car {
+  max-width: 230px;
+  filter: drop-shadow(0 24px 40px rgba(232, 33, 39, 0.35));
+  animation: car-bob 3.2s ease-in-out infinite;
+}
+
+.animated-car .lamp {
+  opacity: 0.22;
+}
+
+/* Chill: slow synchronized breathing, tails steady, no strobes. */
+.pace-chill .side-left,
+.pace-chill .side-right {
+  animation: lamp-breathe 2.6s ease-in-out infinite;
+}
+.pace-chill .tail-left,
+.pace-chill .tail-right {
+  opacity: 0.7;
+}
+.pace-chill .brake {
+  animation: lamp-breathe 2.6s ease-in-out infinite 1.3s;
+}
+
+/* Standard: left/right alternate on the beat, brake pulses twice as fast. */
+.pace-standard .side-left,
+.pace-standard .turn-left,
+.pace-standard .tail-left {
+  animation: lamp-flash 0.86s steps(1) infinite;
+}
+.pace-standard .side-right,
+.pace-standard .turn-right,
+.pace-standard .tail-right {
+  animation: lamp-flash 0.86s steps(1) infinite 0.43s;
+}
+.pace-standard .brake {
+  animation: lamp-pulse 0.43s ease-in-out infinite;
+}
+
+/* Max: rapid full strobe, turn signals off-phase, a little shake. */
+.pace-max .side-left,
+.pace-max .side-right,
+.pace-max .tail-left,
+.pace-max .tail-right,
+.pace-max .brake {
+  animation: lamp-strobe 0.2s steps(1) infinite;
+}
+.pace-max .turn-left,
+.pace-max .turn-right {
+  animation: lamp-strobe 0.2s steps(1) infinite 0.1s;
+}
+.pace-max .car-body {
+  transform-origin: 150px 280px;
+  animation: car-shake 0.4s ease-in-out infinite;
+}
+
+@keyframes lamp-breathe {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes lamp-flash {
+  0%,
+  46% {
+    opacity: 1;
+  }
+  47%,
+  100% {
+    opacity: 0.18;
+  }
+}
+@keyframes lamp-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes lamp-strobe {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.12;
+  }
+}
+@keyframes car-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
+@keyframes car-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-car .lamp,
+  .animated-car .car-body,
+  .hero-car {
+    animation: none !important;
+    opacity: 0.85;
+  }
+}
+
+/* --- style showcase carousel --- */
+.showcase {
+  margin: 26px 0 18px;
+}
+
+.showcase-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.showcase-head h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.showcase-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.showcase-nav .btn {
+  padding: 6px 14px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.showcase-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 4px 12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.showcase-card {
+  flex: 0 0 min(280px, 82vw);
+  scroll-snap-align: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  text-align: center;
+}
+
+.showcase-card .showcase-car {
+  max-width: 130px;
+  margin: 0 auto 12px;
+}
+
+.showcase-card h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.showcase-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.showcase-hint {
+  text-align: center;
+}
+
+/* --- steps / pricing / sub-actions --- */
+.steps-section h2,
+.pricing-hero h2 {
   margin-top: 0;
 }
 
-.faq dd {
+.steps-section h2 {
+  font-size: 22px;
+  margin-bottom: 14px;
+}
+
+.steps-section .steps {
+  margin-top: 0;
+}
+
+.price-accent {
+  color: var(--accent-2);
+}
+
+.pricing-list {
+  max-width: 480px;
+  margin: 0 auto 22px;
+  text-align: left;
+}
+
+.sub-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.sub-actions .btn.on {
+  border-color: var(--accent);
+  background: rgba(232, 33, 39, 0.12);
+}
+
+.sub-panel {
+  margin-top: 16px;
+  text-align: left;
+}
+
+.sub-panel .install {
+  margin-bottom: 0;
+}
+
+.usb-steps {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.usb-steps li {
+  margin-bottom: 4px;
+}
+
+.usb-steps code {
+  background: var(--panel-2);
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+/* --- Q&A --- */
+.qanda {
+  margin-top: 18px;
+}
+
+.qanda h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.qanda dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.qanda dt {
+  font-weight: 600;
+}
+
+.qanda dd {
   margin: 4px 0 0;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
 }
 
-@media (max-width: 700px) {
-  .compare {
+@media (max-width: 800px) {
+  .home .hero {
     grid-template-columns: 1fr;
   }
-}
-
-.site-tag {
-  margin: 0 0 10px;
+  .hero-car {
+    max-width: 180px;
+  }
 }

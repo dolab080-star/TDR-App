@@ -10,6 +10,7 @@ import { DownloadPanel, type AudioChoice } from './components/DownloadPanel';
 import { InstallPanel } from './components/InstallPanel';
 import { YouTubeLink } from './components/YouTubeLink';
 import { PurchaseBanner } from './components/PurchaseBanner';
+import { Home } from './components/Home';
 import { useAnalysisWorker, type AnalysisProgress } from './hooks/useAnalysisWorker';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useLicense } from './hooks/useLicense';
@@ -246,173 +247,176 @@ export default function App() {
   };
 
   const short = (s: number) => formatDuration(s).replace(/\.\d+$/, '');
+  const licensed = license.licensed;
 
   return (
     <div className="app">
-      <p className="eyebrow site-tag">TDR</p>
-      <header className="header">
-        <div className="brand">
-          <div className="logo">T</div>
-          <div>
-            <h1>Tesla Light Show Maker</h1>
-            <p>Drop in a song, get a beat-synced light show for your car.</p>
+      <header className="header header-centered">
+        {licensed && (
+          <div className="header-corner">
+            {!install.installed && (
+              <button
+                className="btn"
+                onClick={() => {
+                  if (install.canInstall) void install.promptInstall();
+                  else setShowInstall((v) => !v);
+                }}
+              >
+                ⬇ Install app
+              </button>
+            )}
+            {phase.kind === 'ready' && (
+              <button className="btn" onClick={reset}>
+                ↺ New song
+              </button>
+            )}
           </div>
-        </div>
-        <div className="actions">
-          {!license.licensed && (
-            <a className="btn" href="/pricing.html">
-              Pricing
-            </a>
-          )}
-          {!install.installed && (
-            <button
-              className="btn"
-              onClick={() => {
-                if (install.canInstall) void install.promptInstall();
-                else setShowInstall((v) => !v);
-              }}
-            >
-              ⬇ Install app
-            </button>
-          )}
-          {phase.kind === 'ready' && (
-            <button className="btn" onClick={reset}>
-              ↺ New song
-            </button>
-          )}
-        </div>
+        )}
+        <p className="eyebrow site-tag">TDR</p>
+        <h1>Tesla Dance Revolution</h1>
+        <p className="tagline">Drop in a song, get a beat-synced light show for your car.</p>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
       <PurchaseBanner status={purchaseCheck} license={license} onDismiss={dismissPurchaseCheck} />
-      {(showInstall || (phase.kind === 'idle' && !install.installed)) && <InstallPanel install={install} onClose={showInstall ? () => setShowInstall(false) : undefined} />}
 
-      {/* Kept mounted (hidden) outside "idle" so a metadata lookup started just
-          before the user drops a file still finishes and reaches onVideo. */}
-      <YouTubeLink video={video} onVideo={setVideo} hidden={phase.kind !== 'idle'} />
-      {phase.kind === 'idle' && (
-        <DropZone
-          onFile={onFile}
-          onDemo={onDemo}
-          heading={video ? `Drop the audio file for “${video.title ?? 'this video'}”` : undefined}
-          compact={!!video}
-          hideDemo={!!video}
-        />
-      )}
+      {!licensed ? (
+        <Home install={install} />
+      ) : (
+        <>
+          {(showInstall || (phase.kind === 'idle' && !install.installed)) && <InstallPanel install={install} onClose={showInstall ? () => setShowInstall(false) : undefined} />}
 
-      {(phase.kind === 'decoding' || phase.kind === 'analyzing') && (
-        <div className="progress">
-          <div className="title">{phase.name}</div>
-          <div className="bar">
-            <div style={{ width: `${phase.kind === 'analyzing' ? Math.round(phase.progress.fraction * 100) : 4}%` }} />
-          </div>
-          <div className="stage">{phase.kind === 'decoding' ? 'Decoding audio…' : `${phase.progress.stage}…`}</div>
-        </div>
-      )}
-
-      {phase.kind === 'ready' && song && analysis && show && brightness && fseqBytes && report && (
-        <div className="workspace">
-          <div className="stack">
-            <div className="panel">
-              <div className="songbar">
-                <div>
-                  <div className="title" title={songTitle}>
-                    {songTitle}
-                  </div>
-                  <div className="meta">
-                    {video && (
-                      <>
-                        <a href={video.url} target="_blank" rel="noreferrer">
-                          YouTube
-                        </a>{' '}
-                        · audio from {song.name} ·{' '}
-                      </>
-                    )}
-                    {formatDuration(analysis.duration)} · {analysis.bpm.toFixed(1)} BPM · {analysis.bars.length} bars · {analysis.sections.length} sections ·{' '}
-                    {profile.label}
-                  </div>
-                </div>
-                <div className="chips">
-                  {show.events
-                    .filter((e) => e.kind === 'drop')
-                    .slice(0, 4)
-                    .map((e, i) => (
-                      <button className="chip" key={i} onClick={() => seek(e.time)}>
-                        Drop <b>{short(e.time)}</b>
-                      </button>
-                    ))}
-                </div>
-              </div>
-              {video && durationMismatch(video.duration, analysis.duration) && (
-                <div className="mismatch">
-                  ⚠ The YouTube video is {short(video.duration!)} long but this audio file is {short(analysis.duration)}. They look like different versions, so
-                  the show may not line up with the video you had in mind. The show is generated from the audio file, so it will still match the file.
-                </div>
-              )}
-            </div>
-            <div className="panel">
-              <CarPreview brightness={brightness} frames={show.frames} frameCount={show.frameCount} getTime={getTime} profile={profile} />
-              <div className="transport">
-                <button className="btn primary" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play'}>
-                  {playing ? '❚❚ Pause' : '▶ Play'}
-                </button>
-                <span className="time">
-                  {short(clock)} / {short(analysis.duration)}
-                </span>
-                <span className="hint" style={{ margin: 0 }}>
-                  Space to play/pause · click the timeline to seek
-                </span>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <Timeline analysis={analysis} events={show.events} getTime={getTime} onSeek={seek} />
-              </div>
-              <audio
-                ref={audioRef}
-                src={song.playbackUrl}
-                preload="auto"
-                onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
-                onEnded={() => setPlaying(false)}
-                onError={() => setError('This browser cannot play the original file; the show data is still fine. Try Chrome or convert to WAV/MP3.')}
-              />
-            </div>
-            <StatsPanel analysis={analysis} report={report} fseqBytes={fseqBytes.length} />
-          </div>
-          <div className="stack">
-            <VehiclePanel vehicle={options.vehicle} onChange={(vehicle) => setOptions({ ...options, vehicle })} />
-            <SettingsPanel options={options} onChange={setOptions} />
-            <ClosuresPanel
-              closures={options.closures}
-              onChange={(closures) => setOptions({ ...options, closures })}
-              profile={profile}
-              usage={report.closureUsage}
-              warnings={show.warnings}
-              getTime={getTime}
-              duration={analysis.duration}
+          {/* Kept mounted (hidden) outside "idle" so a metadata lookup started just
+              before the user drops a file still finishes and reaches onVideo. */}
+          <YouTubeLink video={video} onVideo={setVideo} hidden={phase.kind !== 'idle'} />
+          {phase.kind === 'idle' && (
+            <DropZone
+              onFile={onFile}
+              onDemo={onDemo}
+              heading={video ? `Drop the audio file for “${video.title ?? 'this video'}”` : undefined}
+              compact={!!video}
+              hideDemo={!!video}
             />
-            <DownloadPanel
-              baseName={baseName}
-              songBaseName={songBaseName}
-              onBaseNameChange={setCustomName}
-              useSongName={useSongName}
-              onUseSongNameChange={setUseSongName}
-              audioChoices={audioChoices}
-              audioChoice={audioChoice}
-              onAudioChoiceChange={setAudioChoice}
-              audioExt={audioExt}
-              busy={packing}
-              disabled={!report.ok}
-              onDownloadZip={onDownloadZip}
-              onDownloadFseq={onDownloadFseq}
-              onDownloadAudio={onDownloadAudio}
-              license={license}
-            />
-          </div>
-        </div>
+          )}
+
+          {(phase.kind === 'decoding' || phase.kind === 'analyzing') && (
+            <div className="progress">
+              <div className="title">{phase.name}</div>
+              <div className="bar">
+                <div style={{ width: `${phase.kind === 'analyzing' ? Math.round(phase.progress.fraction * 100) : 4}%` }} />
+              </div>
+              <div className="stage">{phase.kind === 'decoding' ? 'Decoding audio…' : `${phase.progress.stage}…`}</div>
+            </div>
+          )}
+
+          {phase.kind === 'ready' && song && analysis && show && brightness && fseqBytes && report && (
+            <div className="workspace">
+              <div className="stack">
+                <div className="panel">
+                  <div className="songbar">
+                    <div>
+                      <div className="title" title={songTitle}>
+                        {songTitle}
+                      </div>
+                      <div className="meta">
+                        {video && (
+                          <>
+                            <a href={video.url} target="_blank" rel="noreferrer">
+                              YouTube
+                            </a>{' '}
+                            · audio from {song.name} ·{' '}
+                          </>
+                        )}
+                        {formatDuration(analysis.duration)} · {analysis.bpm.toFixed(1)} BPM · {analysis.bars.length} bars · {analysis.sections.length} sections ·{' '}
+                        {profile.label}
+                      </div>
+                    </div>
+                    <div className="chips">
+                      {show.events
+                        .filter((e) => e.kind === 'drop')
+                        .slice(0, 4)
+                        .map((e, i) => (
+                          <button className="chip" key={i} onClick={() => seek(e.time)}>
+                            Drop <b>{short(e.time)}</b>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                  {video && durationMismatch(video.duration, analysis.duration) && (
+                    <div className="mismatch">
+                      ⚠ The YouTube video is {short(video.duration!)} long but this audio file is {short(analysis.duration)}. They look like different
+                      versions, so the show may not line up with the video you had in mind. The show is generated from the audio file, so it will
+                      still match the file.
+                    </div>
+                  )}
+                </div>
+                <div className="panel">
+                  <CarPreview brightness={brightness} frames={show.frames} frameCount={show.frameCount} getTime={getTime} profile={profile} />
+                  <div className="transport">
+                    <button className="btn primary" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Play'}>
+                      {playing ? '❚❚ Pause' : '▶ Play'}
+                    </button>
+                    <span className="time">
+                      {short(clock)} / {short(analysis.duration)}
+                    </span>
+                    <span className="hint" style={{ margin: 0 }}>
+                      Space to play/pause · click the timeline to seek
+                    </span>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Timeline analysis={analysis} events={show.events} getTime={getTime} onSeek={seek} />
+                  </div>
+                  <audio
+                    ref={audioRef}
+                    src={song.playbackUrl}
+                    preload="auto"
+                    onPlay={() => setPlaying(true)}
+                    onPause={() => setPlaying(false)}
+                    onEnded={() => setPlaying(false)}
+                    onError={() => setError('This browser cannot play the original file; the show data is still fine. Try Chrome or convert to WAV/MP3.')}
+                  />
+                </div>
+                <StatsPanel analysis={analysis} report={report} fseqBytes={fseqBytes.length} />
+              </div>
+              <div className="stack">
+                <VehiclePanel vehicle={options.vehicle} onChange={(vehicle) => setOptions({ ...options, vehicle })} />
+                <SettingsPanel options={options} onChange={setOptions} />
+                <ClosuresPanel
+                  closures={options.closures}
+                  onChange={(closures) => setOptions({ ...options, closures })}
+                  profile={profile}
+                  usage={report.closureUsage}
+                  warnings={show.warnings}
+                  getTime={getTime}
+                  duration={analysis.duration}
+                />
+                <DownloadPanel
+                  baseName={baseName}
+                  songBaseName={songBaseName}
+                  onBaseNameChange={setCustomName}
+                  useSongName={useSongName}
+                  onUseSongNameChange={setUseSongName}
+                  audioChoices={audioChoices}
+                  audioChoice={audioChoice}
+                  onAudioChoiceChange={setAudioChoice}
+                  audioExt={audioExt}
+                  busy={packing}
+                  disabled={!report.ok}
+                  onDownloadZip={onDownloadZip}
+                  onDownloadFseq={onDownloadFseq}
+                  onDownloadAudio={onDownloadAudio}
+                  license={license}
+                />
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <footer className="footer">
-        Not affiliated with Tesla. Show format per{' '}
+        Tesla Dance Revolution is an independent, fan-made tool — not affiliated with, endorsed by, or sponsored by Tesla, Inc. Use at
+        your own risk: we assume no responsibility for vehicle damage, injury, or copyright issues arising from use of this tool. Show
+        format per{' '}
         <a href="https://github.com/teslamotors/light-show" target="_blank" rel="noreferrer">
           teslamotors/light-show
         </a>

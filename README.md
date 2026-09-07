@@ -1,8 +1,14 @@
-# Tesla Light Show Maker
+# Tesla Dance Revolution (TDR)
 
 Drop in a song and get a Tesla Light Show generated from its beats. Everything
 runs in the browser: the audio never leaves your device, and the result is a
 ready-to-copy `LightShow` folder (`.fseq` + `.wav`/`.mp3`) for a USB stick.
+
+The home page (`/`) is the storefront: an animated red Model Y dancing in the
+hero, a swipeable Chill / Standard / Max showcase, the three-step process,
+the price with a buy button, "Installing the app" and "Detailed instructions"
+sub-panels, and a Q&A with the non-affiliation / no-liability notice. Once a
+purchase is verified the same URL turns into the tool itself.
 
 ## How it works
 
@@ -53,21 +59,21 @@ npx vercel --prod
 
 ## Selling the app
 
-The analysis, preview, vehicle picker and every closure setting are free to
-try. Downloading the finished show (`.fseq` / `LightShow.zip` / audio) is a
-one-time purchase, handled by Stripe Checkout. There's no account system —
-"buying" unlocks downloads on the browser that completed checkout, the same
-local-first spirit as the rest of the app; the confirmation link doubles as
-a receipt that unlocks a new device.
+The whole tool — adding a song, the preview, vehicle and closure settings,
+and downloading the finished show — unlocks with a single one-time purchase
+handled by Stripe Checkout. There's no account system: "buying" unlocks the
+browser that completed checkout, the same local-first spirit as the rest of
+the app, and the confirmation link doubles as a receipt that unlocks a new
+device.
 
 To turn payments on:
 
 1. Create a [Stripe](https://dashboard.stripe.com/register) account (test
    mode works for trying this out — no real charges).
-2. **Product catalog → Add product.** Name it (e.g. "Tesla Light Show Maker
-   — Full Unlock"), set a **one-time** price (the app shows `$7` in
-   `src/lib/price.ts` — change that constant to match whatever you charge).
-   Copy the price's ID (`price_...`).
+2. **Product catalog → Add product.** Name it (e.g. "Tesla Dance Revolution
+   — Full Unlock"), set a **one-time** price of **$6.90** (the app shows
+   `$6.90` from `src/lib/price.ts` — keep that constant in sync with whatever
+   you charge). Copy the price's ID (`price_...`).
 3. **Developers → API keys.** Copy the **secret key** (`sk_test_...` or
    `sk_live_...`) — only the secret key is needed; nothing Stripe-related
    runs in the browser.
@@ -80,9 +86,15 @@ To turn payments on:
 6. Test the whole flow in Stripe test mode with card `4242 4242 4242 4242`,
    any future expiry/CVC, before switching to a live secret key.
 
-Until those env vars are set, `/pricing.html`'s buy button shows "Payments
-aren't set up yet" instead of failing silently — the rest of the app works
-normally either way.
+Until those env vars are set, the home page's buy button shows "Payments
+aren't set up yet" instead of failing silently.
+
+To try the unlocked tool locally without paying, paste this in the browser
+console and reload:
+
+```js
+localStorage.setItem('tesla-lightshow-maker.license.v1', JSON.stringify({ licensed: true, sessionId: 'cs_test_local', purchasedAt: Date.now() }));
+```
 
 `api/create-checkout-session.ts` starts a Checkout Session and redirects to
 Stripe; `api/verify-purchase.ts` confirms the session actually paid before
@@ -119,6 +131,10 @@ analysis and generator run identically in Node (tests) and in the worker.
 Supported: Model S (2021+), Model 3, Model X (2021+), Model Y, Cybertruck on
 software 2021.44.25+. Several shows on one stick need 2023.44.25+.
 
-Format reference: <https://github.com/teslamotors/light-show>. Not affiliated
-with Tesla. Park with clearance around the car before running a show with
-moving parts.
+Format reference: <https://github.com/teslamotors/light-show>.
+
+Tesla Dance Revolution is an independent, fan-made tool — not affiliated
+with, endorsed by, or sponsored by Tesla, Inc. Use at your own risk: no
+responsibility is accepted for vehicle damage, injury, or copyright issues
+arising from its use. Park with clearance around the car before running a
+show with moving parts.

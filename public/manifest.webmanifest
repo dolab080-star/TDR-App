@@ -1,8 +1,8 @@
 {
-  "id": "tesla-lightshow-maker",
-  "name": "Tesla Light Show Maker",
-  "short_name": "Light Show",
-  "description": "Drop in a song and get a Tesla Light Show generated from its beats. Runs entirely on your device.",
+  "id": "tesla-dance-revolution",
+  "name": "Tesla Dance Revolution",
+  "short_name": "TDR",
+  "description": "Drop in a song and get a Tesla light show generated from its beats. Runs entirely on your device.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { restoreUrl, type License } from '../lib/license';
-import { PRICE_DISPLAY } from '../lib/price';
+import { UsbInstructions } from './UsbInstructions';
 
 export interface AudioChoice {
   id: 'original' | 'wav';
@@ -41,96 +41,68 @@ export function DownloadPanel(p: Props) {
 
   return (
     <div className="panel download">
-      <div className="songbar" style={{ marginBottom: p.license.licensed ? 12 : 0 }}>
+      <div className="songbar" style={{ marginBottom: 12 }}>
         <h3 style={{ margin: 0 }}>Put it on your car</h3>
-        {p.license.licensed && <span className="chip unlocked">✓ Full version unlocked</span>}
+        <span className="chip unlocked">✓ Full version</span>
       </div>
-
-      {!p.license.licensed ? (
-        <div className="paywall">
-          <p className="paywall-lead">
-            Downloading the finished show is part of the full version — everything else here (analysis, preview, your car, every
-            style and closure) is free to try.
-          </p>
-          <a className="btn primary big" href="/pricing.html">
-            🔒 Unlock downloads — {PRICE_DISPLAY} one-time
-          </a>
-          <p className="hint">No subscription. One payment unlocks this app for good, on this browser.</p>
-        </div>
-      ) : (
-        <>
-          <label className="toggle">
-            <input type="checkbox" checked={p.useSongName} onChange={(e) => p.onUseSongNameChange(e.target.checked)} />
-            <span>
-              <span className="t">Name files after the song</span>
-              <br />
-              <span className="d">
-                Off = <code>lightshow.fseq</code> (works on every software version). On = <code>{p.songBaseName}.fseq</code>, which
-                lets you keep several shows on one stick (2023.44.25+).
-              </span>
-            </span>
+      <label className="toggle">
+        <input type="checkbox" checked={p.useSongName} onChange={(e) => p.onUseSongNameChange(e.target.checked)} />
+        <span>
+          <span className="t">Name files after the song</span>
+          <br />
+          <span className="d">
+            Off = <code>lightshow.fseq</code> (works on every software version). On = <code>{p.songBaseName}.fseq</code>, which lets
+            you keep several shows on one stick (2023.44.25+).
+          </span>
+        </span>
+      </label>
+      {p.useSongName && (
+        <div className="field">
+          <label>
+            <span>File name</span>
           </label>
-          {p.useSongName && (
-            <div className="field">
-              <label>
-                <span>File name</span>
-              </label>
-              <input className="select" value={p.baseName} onChange={(e) => p.onBaseNameChange(e.target.value)} aria-label="File name" />
-            </div>
-          )}
-          {p.audioChoices.length > 1 && (
-            <div className="field">
-              <label>
-                <span>Audio file</span>
-              </label>
-              <select className="select" value={p.audioChoice} onChange={(e) => p.onAudioChoiceChange(e.target.value as AudioChoice['id'])}>
-                {p.audioChoices.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label} — {c.detail}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-          {p.audioChoices.length === 1 && <p className="hint">{p.audioChoices[0].detail}</p>}
-          <button className="btn primary big" disabled={p.disabled || p.busy} onClick={() => run(p.onDownloadZip)}>
-            {p.busy ? 'Packing…' : '⬇ Download LightShow.zip'}
-          </button>
-          <div className="files">
-            <button className="btn" disabled={p.disabled || p.busy} onClick={() => run(p.onDownloadFseq)}>
-              .fseq only
-            </button>
-            <button className="btn" disabled={p.disabled || p.busy} onClick={() => run(p.onDownloadAudio)}>
-              .{p.audioExt} only
-            </button>
-          </div>
-          {err && (
-            <p className="hint" style={{ color: 'var(--accent-2)' }}>
-              {err}
-            </p>
-          )}
-          <ol>
-            <li>
-              Format a USB stick as <b>exFAT</b> or FAT32 (not NTFS).
-            </li>
-            <li>
-              Unzip and copy the <code>LightShow</code> folder to the root of the stick.
-            </li>
-            <li>No TeslaCam folder or firmware/map files on the same stick.</li>
-            <li>Plug into a front USB / glovebox port, wait a few seconds.</li>
-            <li>
-              In the car: <b>Toybox → Light Show → Schedule Show</b>.
-            </li>
-          </ol>
-          {restore && (
-            <details className="caps">
-              <summary>Setting this up on another device?</summary>
-              <p className="hint">
-                Open this link there to unlock it too — it's your receipt: <code>{restore}</code>
-              </p>
-            </details>
-          )}
-        </>
+          <input className="select" value={p.baseName} onChange={(e) => p.onBaseNameChange(e.target.value)} aria-label="File name" />
+        </div>
+      )}
+      {p.audioChoices.length > 1 && (
+        <div className="field">
+          <label>
+            <span>Audio file</span>
+          </label>
+          <select className="select" value={p.audioChoice} onChange={(e) => p.onAudioChoiceChange(e.target.value as AudioChoice['id'])}>
+            {p.audioChoices.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label} — {c.detail}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+      {p.audioChoices.length === 1 && <p className="hint">{p.audioChoices[0].detail}</p>}
+      <button className="btn primary big" disabled={p.disabled || p.busy} onClick={() => run(p.onDownloadZip)}>
+        {p.busy ? 'Packing…' : '⬇ Download LightShow.zip'}
+      </button>
+      <div className="files">
+        <button className="btn" disabled={p.disabled || p.busy} onClick={() => run(p.onDownloadFseq)}>
+          .fseq only
+        </button>
+        <button className="btn" disabled={p.disabled || p.busy} onClick={() => run(p.onDownloadAudio)}>
+          .{p.audioExt} only
+        </button>
+      </div>
+      {err && (
+        <p className="hint" style={{ color: 'var(--accent-2)' }}>
+          {err}
+        </p>
+      )}
+      <UsbInstructions />
+      {restore && (
+        <details className="caps">
+          <summary>Setting this up on another device?</summary>
+          <p className="hint">
+            Open this link there to unlock it too — it's your receipt: <code>{restore}</code>
+          </p>
+        </details>
       )}
     </div>
   );
