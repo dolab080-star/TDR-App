@@ -377,6 +377,21 @@ a {
   gap: 6px 14px;
   font-size: 13px;
   color: var(--muted);
+  max-width: 560px;
+}
+
+.legend .group {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.legend .group:first-child {
+  margin-top: 0;
 }
 
 .legend .row {

@@ -67,6 +67,19 @@ const LIGHTS: LightShape[] = [
 // reverse lights are one channel driving two lamps
 const REVERSE_R: LightShape = { ch: CH.reverseLights, color: 'white', x: 164, y: 500, w: 18, h: 8, rx: 2 };
 
+/** Live light groups shown as status rows next to the moving parts. */
+const LIGHT_ROWS: { label: string; chans: number[] }[] = [
+  { label: 'Headlights', chans: [CH.outerMainBeamL, CH.outerMainBeamR, CH.innerMainBeamL, CH.innerMainBeamR] },
+  { label: 'Signature strips', chans: [CH.signatureL, CH.signatureR, CH.channel4L, CH.channel4R] },
+  { label: 'Turn signals', chans: [CH.frontTurnL, CH.frontTurnR, CH.rearTurnL, CH.rearTurnR, CH.sideRepeaterL, CH.sideRepeaterR] },
+  { label: 'Fog lights', chans: [CH.frontFogL, CH.frontFogR, CH.rearFogLights] },
+  { label: 'Brake & tail', chans: [CH.brakeLights, CH.tailL, CH.tailR, CH.reverseLights, CH.licensePlate] },
+];
+
+function lightLabel(b: number): string {
+  return b >= 0.6 ? 'on' : b >= 0.12 ? 'fading' : 'off';
+}
+
 const CLOSURE_ROWS: { label: string; chans: number[] }[] = [
   { label: 'Charge port', chans: [CH.chargePort] },
   { label: 'Mirrors', chans: [CH.mirrorL, CH.mirrorR] },
@@ -100,6 +113,7 @@ export function CarPreview({ brightness, frames, frameCount, getTime, profile }:
   const liftgate = useRef<SVGRectElement>(null);
   const windowRefs = useRef<(SVGRectElement | null)[]>([]);
   const closureVals = useRef<(HTMLSpanElement | null)[]>([]);
+  const lightVals = useRef<(HTMLSpanElement | null)[]>([]);
   const hue = useRef(0);
 
   useEffect(() => {
@@ -159,6 +173,16 @@ export function CarPreview({ brightness, frames, frameCount, getTime, profile }:
           el.className = `val${label !== 'idle' ? ' active' : ''}`;
         }
       });
+      LIGHT_ROWS.forEach((r, i) => {
+        const el = lightVals.current[i];
+        if (!el) return;
+        const b = Math.max(...r.chans.map((ch) => brightness[row + ch - 1]));
+        const label = lightLabel(b);
+        if (el.textContent !== label) {
+          el.textContent = label;
+          el.className = `val${label === 'on' ? ' active' : ''}`;
+        }
+      });
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -214,6 +238,16 @@ export function CarPreview({ brightness, frames, frameCount, getTime, profile }:
       </div>
       <div>
         <div className="legend">
+          <span className="group">Lights</span>
+          {LIGHT_ROWS.map((r, i) => (
+            <div className="row" key={r.label} hidden={!!profile && r.chans.every((ch) => profile.absentChannels.has(ch))}>
+              <span>{r.label}</span>
+              <span className="val" ref={(el) => { lightVals.current[i] = el; }}>
+                off
+              </span>
+            </div>
+          ))}
+          <span className="group">Moving parts</span>
           {CLOSURE_ROWS.map((r, i) => (
             <div className="row" key={r.label} hidden={!!profile && !closureAvailable(profile, r.label)}>
               <span>{r.label === 'Liftgate' && profile ? profile.closures.liftgateLabel : r.label}</span>
