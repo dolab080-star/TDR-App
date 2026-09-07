@@ -18,6 +18,18 @@ export const CAR = {
   pocketHalfWidth: 0.6,
 };
 
+/** Door windows that slide down, as x ranges; everything else in the glasshouse is fixed glass. */
+export const WINDOWS: { id: 'front' | 'rear'; from: number; to: number }[] = [
+  { id: 'front', from: -0.08, to: 0.5 },
+  { id: 'rear', from: -1.12, to: -0.2 },
+];
+
+/** The liftgate: everything behind the hinge that is roof/rear glass, plus the tail panel above the bumper. */
+export const HATCH = { hingeX: -1.55, hingeY: 1.47, tailX: -2.2, cutY: 0.62 };
+
+/** Per-vertex surface kind: paint, roof/windshield/rear glass, an openable door window, or fixed flank glass (pillars, quarter lights). */
+export const ZONE = { paint: 0, glass: 1, window: 2, flank: 3 } as const;
+
 type Key = [number, number];
 
 /** Piecewise cubic Hermite through sorted keypoints with finite-difference tangents. */
@@ -144,6 +156,7 @@ export interface Station {
   half: Key[];
   lowerCount: number;
   shoulder: number;
+  top: number;
   hasGlass: boolean;
 }
 
@@ -175,23 +188,37 @@ export function station(x: number): Station {
     upper.push([w - 0.2, shoulder + 0.02], [w * 0.5, top - 0.01], [0, top]);
   }
   const half = [...resample(chaikin(lower, 3), LOWER_POINTS), ...resample(chaikin(upper, 3), UPPER_POINTS)];
-  return { x, half, lowerCount: LOWER_POINTS, shoulder, hasGlass };
+  return { x, half, lowerCount: LOWER_POINTS, shoulder, top, hasGlass };
 }
 
-export interface BodyBuild {
-  geometry: THREE.BufferGeometry;
+/** The sloped flank of the glasshouse between the shoulder and the roof rail: where side windows live. */
+export function isFlank(st: Station, y: number): boolean {
+  return st.hasGlass && y > st.shoulder + 0.025 && y < st.top - 0.1;
+}
+
+export function windowAt(x: number): (typeof WINDOWS)[number] | undefined {
+  return WINDOWS.find((w) => x >= w.from && x <= w.to);
+}
+
+export interface BodyColors {
+  paint: THREE.Color;
+  glass: THREE.Color;
+  cabin: THREE.Color;
 }
 
 /**
  * Builds the body as an indexed grid: `stations` rings of `2 * pointsPerHalf - 2`
- * vertices each, coloured red below the shoulder and glass-black above it.
- * Wheel wells are pressed inward so the wheels sit inside pockets.
+ * vertices each, coloured red below the shoulder and glass-black above it,
+ * except behind the door windows where the cabin shows once they slide down.
+ * Wheel wells are pressed inward so the wheels sit inside pockets. A `zone`
+ * attribute records what each vertex is so the liftgate can be split off.
  */
-export function buildBodyGeometry(paint: THREE.Color, glass: THREE.Color, stations = 150): BodyBuild {
+export function buildBodyGeometry(colors: BodyColors, stations = 150): THREE.BufferGeometry {
   const pointsPerHalf = LOWER_POINTS + UPPER_POINTS;
   const ring = 2 * pointsPerHalf - 2;
   const positions: number[] = [];
-  const colors: number[] = [];
+  const colorAttr: number[] = [];
+  const zones: number[] = [];
   const indices: number[] = [];
 
   for (let i = 0; i < stations; i++) {
@@ -210,8 +237,20 @@ export function buildBodyGeometry(paint: THREE.Color, glass: THREE.Color, statio
       const az = Math.abs(z);
       const zz = Math.sign(z || 1) * (az - inside * Math.max(0, az - CAR.pocketHalfWidth));
       positions.push(x, y, zz);
-      const c = st.hasGlass && j >= st.lowerCount ? glass : paint;
-      colors.push(c.r, c.g, c.b);
+      let zone: number = ZONE.paint;
+      let c = colors.paint;
+      if (st.hasGlass && j >= st.lowerCount) {
+        const flank = isFlank(st, y);
+        if (flank && windowAt(x)) {
+          zone = ZONE.window;
+          c = colors.cabin;
+        } else {
+          zone = flank ? ZONE.flank : ZONE.glass;
+          c = colors.glass;
+        }
+      }
+      colorAttr.push(c.r, c.g, c.b);
+      zones.push(zone);
     };
     for (let j = 0; j < pointsPerHalf; j++) pushPoint(st.half[j][0], st.half[j][1], j);
     for (let j = pointsPerHalf - 2; j >= 1; j--) pushPoint(-st.half[j][0], st.half[j][1], j);
@@ -229,10 +268,101 @@ export function buildBodyGeometry(paint: THREE.Color, glass: THREE.Color, statio
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorAttr, 3));
+  geometry.setAttribute('zone', new THREE.Float32BufferAttribute(zones, 1));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   geometry.computeBoundingBox();
   geometry.computeBoundingSphere();
-  return { geometry };
+  return geometry;
+}
+
+/** Whether a vertex belongs to the liftgate: rear roof/glass behind the hinge, or the whole tail above the bumper. */
+export function isHatchVertex(x: number, y: number, zone: number): boolean {
+  if (x > HATCH.hingeX || zone === ZONE.window) return false;
+  if (zone === ZONE.glass) return true;
+  return x < HATCH.tailX && y > HATCH.cutY;
+}
+
+/**
+ * Splits the full body into the fixed shell, the liftgate, and the cabin
+ * seen behind the door windows (drawn matte so an open window reads as a
+ * dark opening). All three share the same vertex buffers (positions,
+ * colours, normals) and differ only in which triangles they draw, so
+ * shading is seamless across the cuts.
+ */
+export function splitBody(full: THREE.BufferGeometry): { shell: THREE.BufferGeometry; hatch: THREE.BufferGeometry; cabin: THREE.BufferGeometry } {
+  const pos = full.attributes.position;
+  const zone = full.attributes.zone;
+  const index = full.index!;
+  const hatchVertex = (i: number) => isHatchVertex(pos.getX(i), pos.getY(i), zone.getX(i));
+  const cabinVertex = (i: number) => zone.getX(i) === ZONE.window;
+  const shellIdx: number[] = [];
+  const hatchIdx: number[] = [];
+  const cabinIdx: number[] = [];
+  for (let t = 0; t < index.count; t += 3) {
+    const a = index.getX(t);
+    const b = index.getX(t + 1);
+    const c = index.getX(t + 2);
+    const target = hatchVertex(a) && hatchVertex(b) && hatchVertex(c) ? hatchIdx : cabinVertex(a) && cabinVertex(b) && cabinVertex(c) ? cabinIdx : shellIdx;
+    target.push(a, b, c);
+  }
+  const part = (idx: number[]) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', pos);
+    g.setAttribute('color', full.attributes.color);
+    g.setAttribute('normal', full.attributes.normal);
+    g.setIndex(idx);
+    g.computeBoundingBox();
+    g.computeBoundingSphere();
+    return g;
+  };
+  return { shell: part(shellIdx), hatch: part(hatchIdx), cabin: part(cabinIdx) };
+}
+
+/**
+ * A door-window pane: the same flank surface as the body between two
+ * stations, lifted a hair off it so it can slide down into the door.
+ */
+export function buildPaneGeometry(from: number, to: number, side: 1 | -1, stations = 16, rows = 9, lift = 0.008): THREE.BufferGeometry {
+  const positions: number[] = [];
+  const indices: number[] = [];
+  let built = 0;
+  for (let i = 0; i < stations; i++) {
+    const x = from + ((to - from) * i) / (stations - 1);
+    const st = station(x);
+    const flank = st.half.slice(st.lowerCount).filter(([, y]) => isFlank(st, y));
+    if (flank.length < 2) continue;
+    const pts = resample(flank, rows);
+    for (let r = 0; r < rows; r++) {
+      const [z, y] = pts[r];
+      const [z0, y0] = pts[Math.max(0, r - 1)];
+      const [z1, y1] = pts[Math.min(rows - 1, r + 1)];
+      // Outward normal of the section curve in the y/z plane.
+      let nz = y1 - y0;
+      let ny = -(z1 - z0);
+      const len = Math.hypot(nz, ny) || 1;
+      nz /= len;
+      ny /= len;
+      positions.push(x, y + ny * lift, side * (z + nz * lift));
+    }
+    built++;
+  }
+  for (let i = 0; i < built - 1; i++) {
+    for (let r = 0; r < rows - 1; r++) {
+      const a = i * rows + r;
+      const b = a + 1;
+      const c = (i + 1) * rows + r + 1;
+      const d = (i + 1) * rows + r;
+      if (side === 1) indices.push(a, b, c, a, c, d);
+      else indices.push(a, c, b, a, d, c);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+  return geometry;
 }

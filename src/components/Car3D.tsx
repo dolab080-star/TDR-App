@@ -2,23 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildCar } from '../lib/car3d/model';
-import { choreograph, STATIC_STATE, type Pace } from '../lib/car3d/choreo';
+import { choreograph, STATIC_STATE } from '../lib/car3d/choreo';
 
 interface Props {
-  pace: Pace;
   label?: string;
   /** Called if the WebGL renderer cannot be created, so the caller can fall back. */
   onUnavailable?: () => void;
 }
 
-const AUTO_SPIN = 0.22;
-const START_YAW = -0.75;
+/** Front three-quarter view: nose, light bar and one flank all visible. */
+const YAW = -0.75;
 
-export default function Car3D({ pace, label, onUnavailable }: Props) {
+export default function Car3D({ label, onUnavailable }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const paceRef = useRef(pace);
   const [failed, setFailed] = useState(false);
-  paceRef.current = pace;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -91,16 +88,15 @@ export default function Car3D({ pace, label, onUnavailable }: Props) {
     scene.add(ground);
 
     const car = buildCar();
-    car.spin.rotation.y = START_YAW;
+    car.spin.rotation.y = YAW;
     scene.add(car.spin);
 
     const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-    // Drag to spin; auto-rotation resumes a moment after release.
+    // Drag to look around; the car otherwise holds its angle.
     let dragging = false;
     let lastX = 0;
     let velocity = 0;
-    let idleSince = 0;
     const canvas = renderer.domElement;
     const onDown = (e: PointerEvent) => {
       dragging = true;
@@ -119,7 +115,6 @@ export default function Car3D({ pace, label, onUnavailable }: Props) {
     const onUp = (e: PointerEvent) => {
       if (!dragging) return;
       dragging = false;
-      idleSince = performance.now();
       try {
         canvas.releasePointerCapture(e.pointerId);
       } catch {
@@ -138,20 +133,13 @@ export default function Car3D({ pace, label, onUnavailable }: Props) {
     let running = false;
 
     const frame = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const dt = Math.min(0.5, (now - last) / 1000);
       last = now;
       if (!reduceMotion) {
         clock += dt;
-        car.apply(choreograph(paceRef.current, clock));
-        if (!dragging) {
-          if (Math.abs(velocity) > 0.0005) {
-            car.spin.rotation.y += velocity;
-            velocity *= 0.92;
-          } else if (now - idleSince > 1800) {
-            car.spin.rotation.y += AUTO_SPIN * dt;
-          }
-        }
-      } else if (!dragging && Math.abs(velocity) > 0.0005) {
+        car.apply(choreograph(clock));
+      }
+      if (!dragging && Math.abs(velocity) > 0.0005) {
         car.spin.rotation.y += velocity;
         velocity *= 0.92;
       }
@@ -214,5 +202,5 @@ export default function Car3D({ pace, label, onUnavailable }: Props) {
   }, [onUnavailable]);
 
   if (failed) return null;
-  return <div ref={hostRef} className="car3d" role="img" aria-label={label ?? `3D Tesla with lights dancing at ${pace} intensity. Drag to spin.`} />;
+  return <div ref={hostRef} className="car3d" role="img" aria-label={label ?? 'A red 2026 Model Y in 3D: lights flashing, windows and liftgate opening, mirrors folding. Drag to spin.'} />;
 }

@@ -4,19 +4,15 @@ Drop in a song and get a Tesla Light Show generated from its beats. Everything
 runs in the browser: the audio never leaves your device, and the result is a
 ready-to-copy `LightShow` folder (`.fseq` + `.wav`/`.mp3`) for a USB stick.
 
-The home page (`/`) is the storefront: a photo of a red 2026 Model Y whose
-light bar, headlights and indicators are re-lit every frame to a canned beat
-(`src/components/PhotoCar.tsx`; lamp shapes live in the photo's own pixel
-space, so swapping the picture in `public/hero/` means updating those
-coordinates), a "Spin it in 3D" toggle that lazy-loads a procedurally built
-generic Model Y in three.js (`src/lib/car3d/`), a swipeable Chill / Standard
-/ Max showcase, the three-step process, the price with a buy button,
-"Installing the app" and "Detailed instructions" sub-panels, and a Q&A with
-the non-affiliation / no-liability notice. Once a purchase is verified the
-same URL turns into the tool itself.
-
-The hero photo is the one supplied for this project — make sure you hold the
-rights to publish it commercially, or replace it with your own picture.
+The home page (`/`) is the storefront: a 3D generic red 2026 Model Y built
+procedurally in three.js (`src/lib/car3d/`) whose lights flash, door windows
+slide down, liftgate opens and mirrors fold to a canned beat, quick links to
+"Installing the app", "Detailed instructions" and "Already bought? Sign in",
+a "Three ways to move" demo that runs the real generator on the built-in
+beat (Chill / Standard / Max, windows and liftgate included) in the same
+top-down preview the tool uses, the three-step process, the price with a
+buy button, and a Q&A with the non-affiliation / no-liability notice. three.js is lazy-loaded and the SVG car stands in without WebGL.
+Once a purchase is verified the same URL turns into the tool itself.
 
 ## How it works
 

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { HeroCar } from './HeroCar';
-import { StyleShowcase } from './StyleShowcase';
-import type { Pace } from '../lib/car3d/choreo';
+import { DemoShowcase } from './DemoShowcase';
 import { InstallPanel } from './InstallPanel';
 import { UsbInstructions } from './UsbInstructions';
 import { QandA } from './QandA';
@@ -14,10 +13,12 @@ interface Props {
   install: InstallState;
 }
 
-const PACES: { id: Pace; label: string }[] = [
-  { id: 'chill', label: 'Chill' },
-  { id: 'standard', label: 'Standard' },
-  { id: 'max', label: 'Max' },
+type Sub = 'install' | 'usb' | 'signin';
+
+const SUBS: { id: Sub; label: string }[] = [
+  { id: 'signin', label: '🔑 Already bought? Sign in' },
+  { id: 'usb', label: '📋 Detailed instructions' },
+  { id: 'install', label: '📲 Installing the app' },
 ];
 
 const STEPS = [
@@ -29,13 +30,7 @@ const STEPS = [
 export function Home({ install }: Props) {
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState<string | null>(null);
-  const [open, setOpen] = useState<'install' | 'usb' | 'signin' | null>(null);
-  const openSignin = () => {
-    setOpen('signin');
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-  const [pace, setPace] = useState<Pace>('standard');
-  const [heroMode, setHeroMode] = useState<'photo' | '3d'>('photo');
+  const [open, setOpen] = useState<Sub | null>(null);
   const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
 
   const buy = async () => {
@@ -58,6 +53,38 @@ export function Home({ install }: Props) {
 
   return (
     <div className="home">
+      <nav className="sub-actions sub-header" aria-label="Quick links">
+        {SUBS.map((s) => (
+          <button key={s.id} className={`btn${open === s.id ? ' on' : ''}`} aria-expanded={open === s.id} onClick={() => setOpen(open === s.id ? null : s.id)}>
+            {s.label}
+          </button>
+        ))}
+      </nav>
+      {open === 'signin' && (
+        <div className="sub-panel">
+          <SignIn onClose={() => setOpen(null)} />
+        </div>
+      )}
+      {open === 'install' && (
+        <div className="sub-panel">
+          <InstallPanel install={install} onClose={() => setOpen(null)} />
+        </div>
+      )}
+      {open === 'usb' && (
+        <div className="sub-panel panel">
+          <h3>Putting a finished show on your car</h3>
+          <UsbInstructions />
+          <p className="hint">
+            Supported: Model S (2021+), Model 3, Model X (2021+), Model Y, Cybertruck on software 2021.44.25 or newer.
+            Several shows on one stick need 2023.44.25+. Park with room around the car before running a show with moving
+            parts.
+          </p>
+          <button className="btn ghost" onClick={() => setOpen(null)}>
+            Close
+          </button>
+        </div>
+      )}
+
       {canceled && (
         <div className="error">
           <div>Checkout was canceled — you were not charged. Ready when you are.</div>
@@ -69,17 +96,14 @@ export function Home({ install }: Props) {
 
       <section className="hero">
         <div className="hero-copy">
-          <h2>Your car, dancing to your song.</h2>
+          <h2>Your car, dancing</h2>
           <p className="hero-sub">
             Drop any track in and get a beat-synced Tesla light show — headlights, turn signals, even the mirrors and
-            windows — timed to every kick, snare and drop. Built for the 2026 Model Y and every other Tesla.
+            windows — timed to every kick, snare and drop.
           </p>
           <div className="hero-cta">
             {buyButton}
-            <span className="hint">One-time payment · no subscription · runs on your device</span>
-            <button className="linklike" onClick={openSignin}>
-              Already bought? Sign in
-            </button>
+            <span className="hint">One-time payment · no subscription</span>
           </div>
           {buyError && (
             <p className="hint" style={{ color: 'var(--accent-2)' }}>
@@ -88,26 +112,13 @@ export function Home({ install }: Props) {
           )}
         </div>
         <div className="hero-car-wrap">
-          <div className={`hero-media${heroMode === '3d' ? ' is-3d' : ''}`}>
-            <HeroCar pace={pace} mode={heroMode} />
+          <div className="hero-media">
+            <HeroCar />
           </div>
-          <div className="pace-chips" role="group" aria-label="Dance intensity">
-            {PACES.map((p) => (
-              <button key={p.id} className={`chip${pace === p.id ? ' on' : ''}`} aria-pressed={pace === p.id} onClick={() => setPace(p.id)}>
-                {p.label}
-              </button>
-            ))}
-            <button className="chip mode-chip" aria-pressed={heroMode === '3d'} onClick={() => setHeroMode(heroMode === '3d' ? 'photo' : '3d')}>
-              {heroMode === '3d' ? '📷 Photo' : '🧊 Spin it in 3D'}
-            </button>
-          </div>
-          <p className="hint hero-3d-hint">
-            {heroMode === '3d' ? 'Generic 2026 Model Y · drag to spin · no sound, just the moves' : '2026 Model Y · no sound, just the moves'}
-          </p>
         </div>
       </section>
 
-      <StyleShowcase />
+      <DemoShowcase />
 
       <section className="panel steps-section">
         <h2>It's this easy</h2>
@@ -143,42 +154,6 @@ export function Home({ install }: Props) {
           </p>
         )}
         <p className="hint">Secure checkout by Stripe. Your song and show never leave your device — only the payment does.</p>
-
-        <div className="sub-actions">
-          <button className={`btn${open === 'install' ? ' on' : ''}`} onClick={() => setOpen(open === 'install' ? null : 'install')}>
-            📲 Installing the app
-          </button>
-          <button className={`btn${open === 'usb' ? ' on' : ''}`} onClick={() => setOpen(open === 'usb' ? null : 'usb')}>
-            📋 Detailed instructions
-          </button>
-          <button className={`btn${open === 'signin' ? ' on' : ''}`} onClick={() => setOpen(open === 'signin' ? null : 'signin')}>
-            🔑 Already bought? Sign in
-          </button>
-        </div>
-        {open === 'signin' && (
-          <div className="sub-panel">
-            <SignIn onClose={() => setOpen(null)} />
-          </div>
-        )}
-        {open === 'install' && (
-          <div className="sub-panel">
-            <InstallPanel install={install} onClose={() => setOpen(null)} />
-          </div>
-        )}
-        {open === 'usb' && (
-          <div className="sub-panel panel">
-            <h3>Putting a finished show on your car</h3>
-            <UsbInstructions />
-            <p className="hint">
-              Supported: Model S (2021+), Model 3, Model X (2021+), Model Y, Cybertruck on software 2021.44.25 or newer.
-              Several shows on one stick need 2023.44.25+. Park with room around the car before running a show with moving
-              parts.
-            </p>
-            <button className="btn ghost" onClick={() => setOpen(null)}>
-              Close
-            </button>
-          </div>
-        )}
       </section>
 
       <QandA />

@@ -272,9 +272,10 @@ export default function App() {
             )}
           </div>
         )}
-        <p className="eyebrow site-tag">TDR</p>
-        <h1>Tesla Dance Revolution</h1>
-        <p className="tagline">Drop in a song, get a beat-synced light show for your car.</p>
+        <h1 className="title-caps">
+          <span>T</span>esla <span>D</span>ance <span>R</span>evolution
+        </h1>
+        <p className="tagline">Your Tesla Wants To Dance</p>
       </header>
 
       {error && <div className="error">⚠ {error}</div>}

@@ -1,12 +1,13 @@
 /**
  * A procedurally built, deliberately generic 2026-style Model Y: lofted
  * crossover body, full-width front and rear light bars, recessed main beams,
- * red paint. No downloaded assets, no badges. Lamps are placed by raycasting
- * onto the finished body so they sit flush on the curved surfaces.
+ * red paint, door windows that slide down and a liftgate on a hinge. No
+ * downloaded assets, no badges. Lamps are placed by raycasting onto the
+ * finished body so they sit flush on the curved surfaces.
  */
 import * as THREE from 'three';
 import type { LampState } from './choreo';
-import { buildBodyGeometry, CAR, halfWidth } from './loft';
+import { buildBodyGeometry, buildPaneGeometry, CAR, halfWidth, HATCH, splitBody, WINDOWS } from './loft';
 
 export interface Lamp {
   material: THREE.MeshStandardMaterial;
@@ -18,11 +19,14 @@ export interface Lamp {
 export interface CarRig {
   /** Outer group: yaw for turntable / drag. */
   spin: THREE.Group;
-  /** Inner group: bob + roll from the choreography. */
+  /** Inner group: bob from the choreography. */
   body: THREE.Group;
   apply(state: LampState): void;
   dispose(): void;
 }
+
+const WINDOW_TRAVEL = 0.47;
+const HATCH_OPEN = 1.15;
 
 function glowTexture(): THREE.Texture {
   const size = 128;
@@ -65,9 +69,9 @@ interface Hit {
   normal: THREE.Vector3;
 }
 
-function probe(body: THREE.Mesh, origin: THREE.Vector3, dir: THREE.Vector3, ray = new THREE.Raycaster()): Hit | null {
+function probe(target: THREE.Mesh, origin: THREE.Vector3, dir: THREE.Vector3, ray = new THREE.Raycaster()): Hit | null {
   ray.set(origin, dir.clone().normalize());
-  const hit = ray.intersectObject(body, false)[0];
+  const hit = ray.intersectObject(target, false)[0];
   if (!hit?.face) return null;
   return { point: hit.point.clone(), normal: hit.face.normal.clone().normalize() };
 }
@@ -82,27 +86,46 @@ export function buildCar(): CarRig {
     return d;
   };
 
-  const paint = track(
-    new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      vertexColors: true,
-      metalness: 0.2,
-      roughness: 0.28,
-      clearcoat: 1,
-      clearcoatRoughness: 0.05,
-    }),
-  );
+  const paintParams = { color: 0xffffff, vertexColors: true, metalness: 0.2, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.05 };
+  const paint = track(new THREE.MeshPhysicalMaterial(paintParams));
+  const paintBothSides = track(new THREE.MeshPhysicalMaterial({ ...paintParams, side: THREE.DoubleSide }));
   const paintSolid = track(new THREE.MeshPhysicalMaterial({ color: 0xc21521, metalness: 0.2, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.05 }));
-  const glass = track(new THREE.MeshPhysicalMaterial({ color: 0x07090f, metalness: 0.6, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04 }));
+  const glass = track(new THREE.MeshPhysicalMaterial({ color: 0x07090f, metalness: 0.6, roughness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, side: THREE.DoubleSide }));
   const trim = track(new THREE.MeshStandardMaterial({ color: 0x0b0c0f, roughness: 0.75, metalness: 0.1 }));
+  const cabin = track(new THREE.MeshStandardMaterial({ color: 0x141214, roughness: 0.98, metalness: 0 }));
   const rubber = track(new THREE.MeshStandardMaterial({ color: 0x0a0a0b, roughness: 0.95 }));
   const alloy = track(new THREE.MeshStandardMaterial({ color: 0x2c3038, roughness: 0.35, metalness: 0.85 }));
   const chrome = track(new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.3, metalness: 0.9 }));
 
-  const bodyGeo = track(buildBodyGeometry(new THREE.Color(0xc21521), new THREE.Color(0x07090f)).geometry);
-  const bodyMesh = new THREE.Mesh(bodyGeo, paint);
-  body.add(bodyMesh);
-  bodyMesh.updateMatrixWorld(true);
+  // The full body is only used for placing parts by raycast; it is drawn as shell + liftgate.
+  const full = track(buildBodyGeometry({ paint: new THREE.Color(0xc21521), glass: new THREE.Color(0x07090f), cabin: new THREE.Color(0x2a2522) }));
+  const probeMesh = new THREE.Mesh(full);
+  probeMesh.updateMatrixWorld(true);
+  const { shell, hatch, cabin: cabinGeo } = splitBody(full);
+  body.add(new THREE.Mesh(track(shell), paint));
+  body.add(new THREE.Mesh(track(cabinGeo), cabin));
+
+  const hatchPivot = new THREE.Group();
+  hatchPivot.position.set(HATCH.hingeX, HATCH.hingeY, 0);
+  const hatchMesh = new THREE.Mesh(track(hatch), paintBothSides);
+  hatchMesh.position.set(-HATCH.hingeX, -HATCH.hingeY, 0);
+  hatchPivot.add(hatchMesh);
+  body.add(hatchPivot);
+
+  // Cargo bay seen when the liftgate is up.
+  const cargo = new THREE.Mesh(track(new THREE.BoxGeometry(0.85, 0.52, 1.3)), cabin);
+  cargo.position.set(-1.95, 0.86, 0);
+  body.add(cargo);
+
+  // Door windows: panes that match the flank and slide down into the doors.
+  const panes: THREE.Mesh[] = [];
+  for (const side of [-1, 1] as const) {
+    for (const w of WINDOWS) {
+      const pane = new THREE.Mesh(track(buildPaneGeometry(w.from, w.to, side)), glass);
+      body.add(pane);
+      panes.push(pane);
+    }
+  }
 
   // Dark underbody fills the view through the wheel pockets.
   const underbody = new THREE.Mesh(track(new THREE.BoxGeometry(4.4, 0.4, CAR.pocketHalfWidth * 2 - 0.04)), trim);
@@ -140,6 +163,11 @@ export function buildCar(): CarRig {
   }
 
   const ray = new THREE.Raycaster();
+  /** Places `obj` at a body-space position under `parent` (which may itself be offset, like the liftgate pivot). */
+  const attach = (obj: THREE.Object3D, parent: THREE.Object3D) => {
+    obj.position.sub(parent.position);
+    parent.add(obj);
+  };
 
   // Flush door handles.
   const handleGeo = track(new THREE.BoxGeometry(0.12, 0.022, 0.012));
@@ -148,7 +176,7 @@ export function buildCar(): CarRig {
       [0.45, 0.9],
       [-0.65, 0.92],
     ]) {
-      const hit = probe(bodyMesh, new THREE.Vector3(x, y, side * 5), new THREE.Vector3(0, 0, -side), ray);
+      const hit = probe(probeMesh, new THREE.Vector3(x, y, side * 5), new THREE.Vector3(0, 0, -side), ray);
       if (!hit) continue;
       const handle = new THREE.Mesh(handleGeo, chrome);
       handle.position.copy(hit.point).addScaledVector(hit.normal, 0.002);
@@ -165,27 +193,38 @@ export function buildCar(): CarRig {
     maxEmissive,
     maxGlow,
   });
-  const addGlow = (lamp: Lamp, color: number, at: THREE.Vector3, normal: THREE.Vector3, w: number, h: number) => {
+  const addGlow = (lamp: Lamp, color: number, at: THREE.Vector3, normal: THREE.Vector3, w: number, h: number, parent: THREE.Object3D = body) => {
     const sprite = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: glowMap, color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0 })));
     sprite.position.copy(at).addScaledVector(normal, 0.06);
     sprite.scale.set(w, h, 1);
     lamp.glows.push(sprite);
-    body.add(sprite);
+    attach(sprite, parent);
   };
 
-  const placeStrip = (opts: { side: 'front' | 'rear'; y: number; zFrom: number; zTo: number; count: number; h: number; depth: number; lift: number; material: (i: number) => THREE.Material }) => {
+  const placeStrip = (opts: {
+    side: 'front' | 'rear';
+    y: number;
+    zFrom: number;
+    zTo: number;
+    count: number;
+    h: number;
+    depth: number;
+    lift: number;
+    material: (i: number) => THREE.Material;
+    parent?: THREE.Object3D;
+  }) => {
     const spacing = (opts.zTo - opts.zFrom) / opts.count;
     const geo = track(new THREE.BoxGeometry(spacing * 1.3, opts.h, opts.depth));
     const dir = new THREE.Vector3(opts.side === 'front' ? -1 : 1, 0, 0);
     const hits: Hit[] = [];
     for (let i = 0; i < opts.count; i++) {
       const z = opts.zFrom + (i + 0.5) * spacing;
-      const hit = probe(bodyMesh, new THREE.Vector3(opts.side === 'front' ? 5 : -5, opts.y, z), dir, ray);
+      const hit = probe(probeMesh, new THREE.Vector3(opts.side === 'front' ? 5 : -5, opts.y, z), dir, ray);
       if (!hit) continue;
       const mesh = new THREE.Mesh(geo, opts.material(i));
       mesh.position.copy(hit.point).addScaledVector(hit.normal, opts.lift - opts.depth / 2);
       mesh.lookAt(hit.point.clone().add(hit.normal));
-      body.add(mesh);
+      attach(mesh, opts.parent ?? body);
       hits.push(hit);
     }
     return hits;
@@ -224,7 +263,7 @@ export function buildCar(): CarRig {
     [headL, -0.5],
     [headR, 0.5],
   ] as const) {
-    const hit = probe(bodyMesh, new THREE.Vector3(5, 0.6, z), new THREE.Vector3(-1, 0, 0), ray);
+    const hit = probe(probeMesh, new THREE.Vector3(5, 0.6, z), new THREE.Vector3(-1, 0, 0), ray);
     if (!hit) continue;
     const mesh = new THREE.Mesh(track(new THREE.BoxGeometry(0.26, 0.06, 0.05)), lamp.material);
     mesh.position.copy(hit.point).addScaledVector(hit.normal, 0.018 - 0.025);
@@ -237,7 +276,7 @@ export function buildCar(): CarRig {
   placeStrip({ side: 'front', y: 0.42, zFrom: -0.6, zTo: 0.6, count: 12, h: 0.1, depth: 0.04, lift: 0.006, material: () => trim });
   placeStrip({ side: 'rear', y: 0.42, zFrom: -0.62, zTo: 0.62, count: 12, h: 0.1, depth: 0.04, lift: 0.006, material: () => trim });
 
-  // Full-width rear bar: outer parts double as indicators, the centre carries the brake boost.
+  // Full-width rear bar on the liftgate: outer parts double as indicators, the centre carries the brake boost.
   const tail = makeLamp(red, 2.6, 0.8);
   const tailL = makeLamp(red, 2.6, 0.7);
   const tailR = makeLamp(red, 2.6, 0.7);
@@ -251,17 +290,18 @@ export function buildCar(): CarRig {
     depth: 0.05,
     lift: 0.012,
     material: (i) => (i < 5 ? tailL.material : i >= 17 ? tailR.material : tail.material),
+    parent: hatchPivot,
   });
   if (rearHits.length > 4) {
     const mid = rearHits[Math.floor(rearHits.length / 2)];
-    addGlow(tail, red, mid.point, mid.normal, 2.6, 0.9);
-    addGlow(tailL, red, rearHits[1].point, rearHits[1].normal, 0.8, 0.5);
-    addGlow(tailR, red, rearHits[rearHits.length - 2].point, rearHits[rearHits.length - 2].normal, 0.8, 0.5);
+    addGlow(tail, red, mid.point, mid.normal, 2.6, 0.9, hatchPivot);
+    addGlow(tailL, red, rearHits[1].point, rearHits[1].normal, 0.8, 0.5, hatchPivot);
+    addGlow(tailR, red, rearHits[rearHits.length - 2].point, rearHits[rearHits.length - 2].normal, 0.8, 0.5, hatchPivot);
   }
 
   const reverse = makeLamp(white, 3, 0.7);
   for (const z of [-0.5, 0.5]) {
-    const hit = probe(bodyMesh, new THREE.Vector3(-5, 0.56, z), new THREE.Vector3(1, 0, 0), ray);
+    const hit = probe(probeMesh, new THREE.Vector3(-5, 0.55, z), new THREE.Vector3(1, 0, 0), ray);
     if (!hit) continue;
     const mesh = new THREE.Mesh(track(new THREE.BoxGeometry(0.14, 0.045, 0.04)), reverse.material);
     mesh.position.copy(hit.point).addScaledVector(hit.normal, 0.012 - 0.02);
@@ -273,7 +313,7 @@ export function buildCar(): CarRig {
   // Charge port on the rear left quarter.
   const port = makeLamp(0x40c0ff, 3, 0.6);
   {
-    const hit = probe(bodyMesh, new THREE.Vector3(-1.95, 0.9, -5), new THREE.Vector3(0, 0, 1), ray);
+    const hit = probe(probeMesh, new THREE.Vector3(-1.95, 0.9, -5), new THREE.Vector3(0, 0, 1), ray);
     if (hit) {
       const mesh = new THREE.Mesh(track(new THREE.CylinderGeometry(0.035, 0.035, 0.02, 20)), port.material);
       mesh.position.copy(hit.point).addScaledVector(hit.normal, 0.004);
@@ -289,7 +329,7 @@ export function buildCar(): CarRig {
   const mirrorFace = track(new THREE.BoxGeometry(0.01, 0.075, 0.17));
   const mirrors: THREE.Group[] = [];
   for (const side of [-1, 1]) {
-    const hit = probe(bodyMesh, new THREE.Vector3(0.9, 0.97, side * 5), new THREE.Vector3(0, 0, -side), ray);
+    const hit = probe(probeMesh, new THREE.Vector3(0.9, 0.97, side * 5), new THREE.Vector3(0, 0, -side), ray);
     const pivot = new THREE.Group();
     pivot.position.copy(hit ? hit.point : new THREE.Vector3(0.9, 0.97, side * 0.9));
     const arm = new THREE.Mesh(mirrorArm, trim);
@@ -345,8 +385,9 @@ export function buildCar(): CarRig {
     rearLight.intensity = 12 * rear;
     mirrors[0].rotation.y = s.mirrorFold * 1.3;
     mirrors[1].rotation.y = -s.mirrorFold * 1.3;
+    for (const pane of panes) pane.position.y = -s.windows * WINDOW_TRAVEL;
+    hatchPivot.rotation.z = -s.trunk * HATCH_OPEN;
     body.position.y = s.bob;
-    body.rotation.x = s.roll;
   };
 
   return {
