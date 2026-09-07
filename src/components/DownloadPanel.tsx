@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { restoreUrl, type License } from '../lib/license';
+import type { License } from '../lib/license';
 import { UsbInstructions } from './UsbInstructions';
 
 export interface AudioChoice {
@@ -37,7 +37,6 @@ export function DownloadPanel(p: Props) {
       setErr((e as Error).message);
     }
   };
-  const restore = restoreUrl(p.license);
 
   return (
     <div className="panel download">
@@ -99,14 +98,14 @@ export function DownloadPanel(p: Props) {
       <details className="caps">
         <summary>Setting this up on another computer?</summary>
         <p className="hint">
-          Open the site there, choose <b>Already bought? Sign in</b> and enter{' '}
-          {p.license.email ? <b>{p.license.email}</b> : 'the email you used at checkout'} — we'll email you a sign-in link.
-          {restore && (
+          Open the site there, choose <b>Already bought? Enter license key</b> and paste your key
+          {p.license.key ? (
             <>
               {' '}
-              Your receipt link works too: <code>{restore}</code>
+              (<code>{p.license.key}</code>)
             </>
-          )}
+          ) : null}
+          . It is also in your Gumroad receipt email.
         </p>
       </details>
     </div>

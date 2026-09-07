@@ -80,7 +80,7 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const runAnalysis = useAnalysisWorker();
   const install = useInstallPrompt();
-  const { license, purchaseCheck, dismissPurchaseCheck } = useLicense();
+  const { license, activation, activate, dismiss } = useLicense();
 
   useEffect(() => {
     try {
@@ -284,10 +284,10 @@ export default function App() {
       </header>
 
       {error && <div className="error">⚠ {error}</div>}
-      <PurchaseBanner status={purchaseCheck} license={license} onDismiss={dismissPurchaseCheck} />
+      <PurchaseBanner activation={activation} license={license} onDismiss={dismiss} />
 
       {!licensed ? (
-        <Home install={install} />
+        <Home install={install} onActivate={activate} />
       ) : (
         <>
           {showInstructions && (

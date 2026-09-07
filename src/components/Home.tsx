@@ -3,16 +3,17 @@ import { OptionsGallery } from './OptionsGallery';
 import { DemoShowcase } from './DemoShowcase';
 import { InstallPanel } from './InstallPanel';
 import { QandA } from './QandA';
-import { SignIn } from './SignIn';
+import { LicenseKeyForm } from './LicenseKeyForm';
 import { PRICE_DISPLAY } from '../lib/price';
-import { startCheckout } from '../lib/checkout';
+import { checkoutUrl, isGumroadConfigured, type ActivationResult } from '../lib/gumroad';
 import type { InstallState } from '../hooks/useInstallPrompt';
 
 interface Props {
   install: InstallState;
+  onActivate: (key: string) => Promise<ActivationResult>;
 }
 
-type Sub = 'install' | 'qa' | 'signin';
+type Sub = 'install' | 'qa' | 'key';
 
 const STEPS = [
   { title: 'Upload your song', desc: 'Drop in any MP3 or WAV.' },
@@ -21,36 +22,21 @@ const STEPS = [
 ];
 
 const SUBS: { id: Sub; icon: string; label: string; short: string }[] = [
-  { id: 'signin', icon: '🔑', label: 'Already bought? Sign in', short: 'Sign in' },
+  { id: 'key', icon: '🔑', label: 'Already bought? Enter license key', short: 'License key' },
   { id: 'qa', icon: '❓', label: 'Q&A', short: 'Q&A' },
   { id: 'install', icon: '📲', label: 'Installing the app', short: 'Install app' },
 ];
 
-export function Home({ install }: Props) {
-  const [buying, setBuying] = useState(false);
-  const [buyError, setBuyError] = useState<string | null>(null);
+export function Home({ install, onActivate }: Props) {
   const [open, setOpen] = useState<Sub | null>(null);
-  const [canceled, setCanceled] = useState(() => new URLSearchParams(window.location.search).get('canceled') === '1');
+  /** Q&A and Installing take over the page; the license key form is a single line and stays inline. */
+  const fullPage = open === 'qa' || open === 'install';
   const stepsRef = useRef<HTMLDivElement>(null);
   const swipeSteps = (dir: 1 | -1) => {
     const track = stepsRef.current;
     if (track) track.scrollBy({ left: dir * Math.max(240, track.clientWidth * 0.8), behavior: 'smooth' });
   };
-  /** Q&A and Installing take over the page; Sign in is a single line and stays inline. */
-  const fullPage = open === 'qa' || open === 'install';
-
-  const buy = async () => {
-    setBuying(true);
-    setBuyError(null);
-    const result = await startCheckout();
-    if (result.ok && result.url) {
-      window.location.href = result.url;
-      return;
-    }
-    setBuyError(result.message ?? 'Something went wrong.');
-    setBuying(false);
-  };
-
+  const configured = isGumroadConfigured();
 
   return (
     <div className="home">
@@ -65,9 +51,9 @@ export function Home({ install }: Props) {
           </button>
         ))}
       </nav>
-      {open === 'signin' && (
+      {open === 'key' && (
         <div className="sub-panel">
-          <SignIn onClose={() => setOpen(null)} />
+          <LicenseKeyForm onActivate={onActivate} onClose={() => setOpen(null)} />
         </div>
       )}
       {open === 'install' && (
@@ -80,15 +66,6 @@ export function Home({ install }: Props) {
           <QandA />
           <button className="btn ghost" onClick={() => setOpen(null)}>
             Close
-          </button>
-        </div>
-      )}
-
-      {canceled && !fullPage && (
-        <div className="error">
-          <div>Checkout was canceled — you were not charged. Ready when you are.</div>
-          <button className="btn ghost" onClick={() => setCanceled(false)}>
-            Dismiss
           </button>
         </div>
       )}
@@ -122,15 +99,20 @@ export function Home({ install }: Props) {
       {!fullPage && <OptionsGallery />}
 
       <section className="buy-section" id="pricing" hidden={fullPage}>
-        <button className="btn primary big stacked" onClick={buy} disabled={buying}>
-          <span>{buying ? 'Redirecting to secure checkout…' : `Buy now — ${PRICE_DISPLAY}`}</span>
-          <small>One-time payment · no subscription</small>
-        </button>
-        {buyError && (
-          <p className="hint" style={{ color: 'var(--accent-2)' }}>
-            {buyError}
-          </p>
+        {configured ? (
+          <a className="btn primary big stacked" href={checkoutUrl()} target="_blank" rel="noopener noreferrer">
+            <span>Buy now — {PRICE_DISPLAY}</span>
+            <small>One-time payment · no subscription</small>
+          </a>
+        ) : (
+          <button className="btn primary big stacked" disabled>
+            <span>Buy now — {PRICE_DISPLAY}</span>
+            <small>Payments aren't set up yet — check back soon</small>
+          </button>
         )}
+        <p className="hint">
+          Secure checkout by Gumroad. Your license key arrives by email right away — paste it under <b>Already bought?</b> to unlock.
+        </p>
       </section>
     </div>
   );

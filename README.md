@@ -5,7 +5,7 @@ runs in the browser: the audio never leaves your device, and the result is a
 ready-to-copy `LightShow` folder (`.fseq` + `.wav`/`.mp3`) for a USB stick.
 
 The home page (`/`) is the storefront, kept deliberately short: the title,
-three quick links (Sign in, Q&A, Installing the app) whose panels open in
+three quick links (Enter license key, Q&A, Installing the app) whose panels open in
 place, a swipeable three-step "Steps" box, a "Moves" demo that runs the real
 generator on the built-in beat (Chill / Standard / Max, windows and liftgate
 included) in the same top-down preview the tool uses, a "Customization" strip of pictures of the tool's
@@ -51,8 +51,8 @@ Command counts stay within the per-show limits from Tesla's README, and the
 
 ## Deploy
 
-The site itself is static (`dist/`), but selling the full version needs two
-small serverless functions under `api/`, so Vercel is the easiest host —
+The site itself is static (`dist/`), but checking license keys needs one
+small serverless function under `api/`, so Vercel is the easiest host —
 import the repository at <https://vercel.com/new> (it picks up `vercel.json`
 and builds `api/*.ts` automatically) or deploy from the CLI:
 
@@ -62,76 +62,38 @@ npx vercel --prod
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dolab080-star/TDR-App)
 
-## Selling the app
+## Selling the app (Gumroad)
 
 The whole tool — adding a song, the preview, vehicle and closure settings,
 and downloading the finished show — unlocks with a single one-time purchase
-handled by Stripe Checkout. There's no account system: "buying" unlocks the
-browser that completed checkout, the same local-first spirit as the rest of
-the app, and the confirmation link doubles as a receipt that unlocks a new
-device.
+on Gumroad. Gumroad runs checkout, receipts, refunds and sales tax, and
+emails every buyer a license key. The key unlocks the browser it is pasted
+into and any other computer the buyer uses; there are no accounts, no
+database and no secrets in this repo.
 
-To turn payments on:
+To turn it on:
 
-1. Create a [Stripe](https://dashboard.stripe.com/register) account (test
-   mode works for trying this out — no real charges).
-2. **Product catalog → Add product.** Name it (e.g. "Tesla Dance Revolution
-   — Full Unlock"), set a **one-time** price of **$6.90** (the app shows
-   `$6.90` from `src/lib/price.ts` — keep that constant in sync with whatever
-   you charge). Copy the price's ID (`price_...`).
-3. **Developers → API keys.** Copy the **secret key** (`sk_test_...` or
-   `sk_live_...`) — only the secret key is needed; nothing Stripe-related
-   runs in the browser.
-4. In your Vercel project: **Settings → Environment Variables**, add:
-   - `STRIPE_SECRET_KEY` = the secret key from step 3
-   - `STRIPE_PRICE_ID` = the price ID from step 2
+1. Create a [Gumroad](https://gumroad.com) account and add a product
+   ("Tesla Dance Revolution, Full Unlock", one-time, **$6.90**).
+2. In the product's **Content** tab tick **Generate a unique license key
+   per sale**. Copy the **Product ID** shown there.
+3. Copy the product's link (looks like `https://yourname.gumroad.com/l/tdr`).
+4. Put both into `src/lib/gumroad.ts` (`productUrl` and `productId`) and
+   push. Until they are filled in the buy button says "Payments aren't set
+   up yet".
 
-   (`.env.example` lists these for reference — don't commit real keys.)
-5. Redeploy (env var changes need a new deployment to take effect).
-6. Test the whole flow in Stripe test mode with card `4242 4242 4242 4242`,
-   any future expiry/CVC, before switching to a live secret key.
-
-Until those env vars are set, the home page's buy button shows "Payments
-aren't set up yet" instead of failing silently.
+`api/verify-license.ts` asks Gumroad's license endpoint whether a pasted key
+belongs to a paid, unrefunded purchase and counts one activation per
+successful check; `maxActivations` in `src/lib/gumroad.ts` (default 10)
+stops a key that has been shared too widely. Gumroad's dashboard lists every
+sale with the buyer's email and key.
 
 To try the unlocked tool locally without paying, paste this in the browser
 console and reload:
 
 ```js
-localStorage.setItem('tesla-lightshow-maker.license.v1', JSON.stringify({ licensed: true, sessionId: 'cs_test_local', purchasedAt: Date.now() }));
+localStorage.setItem('tesla-lightshow-maker.license.v2', JSON.stringify({ licensed: true, key: 'TEST0000-TEST0000-TEST0000-TEST0000', purchasedAt: Date.now() }));
 ```
-
-`api/create-checkout-session.ts` starts a Checkout Session and redirects to
-Stripe; `api/verify-purchase.ts` confirms the session actually paid before
-the client unlocks anything in `localStorage` (see `src/lib/license.ts`) —
-a `?session_id=` alone is never trusted as proof of payment.
-
-### Sign-in emails (returning buyers)
-
-Buyers come back on a new computer, or after clearing their browser, through
-**Already bought? Sign in** on the home page: they enter the email they paid
-with, `api/request-signin.ts` looks it up in Stripe for a paid one-time
-Checkout Session and emails a one-hour sign-in link, and opening that link
-(`?signin=<token>`) re-creates the unlock via `api/verify-signin.ts`. The
-token is HMAC-signed (`server/signin.ts`), so there is still no database
-and no passwords. To turn it on:
-
-1. Create a [Resend](https://resend.com) account (the free tier is plenty),
-   **verify the domain you'll send from**, and create an API key. Without a
-   verified domain you can only send to your own address with
-   `onboarding@resend.dev` — fine for testing.
-2. Generate a signing secret, e.g. `openssl rand -hex 32`.
-3. In Vercel → Settings → Environment Variables add:
-   - `SIGNIN_SECRET` = the random string from step 2
-   - `RESEND_API_KEY` = the key from step 1
-   - `MAIL_FROM` = e.g. `Tesla Dance Revolution <signin@yourdomain.com>`
-   - `APP_URL` = your public site URL (optional; defaults to the Vercel
-     production URL, and is never taken from request headers when either is
-     set, so emails can't be pointed at another site)
-4. Redeploy.
-
-Until those are set the sign-in form says "Email sign-in isn't set up yet"
-and the receipt link from the purchase still works.
 
 ## Develop
 

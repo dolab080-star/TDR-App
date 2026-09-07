@@ -1,76 +1,33 @@
-import { restoreUrl, type License } from '../lib/license';
-import type { PurchaseCheck } from '../hooks/useLicense';
+import type { License } from '../lib/license';
+import type { Activation } from '../hooks/useLicense';
 
 interface Props {
-  status: PurchaseCheck;
+  activation: Activation;
   license: License;
   onDismiss: () => void;
 }
 
-export function PurchaseBanner({ status, license, onDismiss }: Props) {
-  if (status === 'idle') return null;
+export function PurchaseBanner({ activation, license, onDismiss }: Props) {
+  if (activation.status === 'idle' || activation.status === 'failed') return null;
 
-  if (status === 'checking' || status === 'signin-checking') {
+  if (activation.status === 'checking') {
     return (
       <div className="progress" role="status">
-        <div className="title">{status === 'checking' ? 'Confirming your purchase…' : 'Signing you in…'}</div>
+        <div className="title">Checking your license key…</div>
       </div>
     );
   }
 
-  if (status === 'failed' || status === 'signin-failed') {
-    return (
-      <div className="error">
-        <div>
-          {status === 'failed'
-            ? "⚠ We couldn't confirm that purchase. If you were charged, reload this exact page — Stripe can take a few seconds to finalize it."
-            : '⚠ That sign-in link is invalid or has expired (links work for one hour). Request a new one from "Already bought? Sign in" below.'}
-        </div>
-        <button className="btn ghost" onClick={onDismiss}>
-          Dismiss
-        </button>
-      </div>
-    );
-  }
-
-  if (status === 'signin-confirmed') {
-    return (
-      <div className="purchase-ok">
-        <div>
-          <b>✅ Welcome back — you're signed in on this browser.</b>
-          <p className="hint">To use it on another computer, just sign in there with the same email.</p>
-        </div>
-        <div className="chips">
-          <button className="btn ghost" onClick={onDismiss}>
-            Dismiss
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const url = restoreUrl(license);
   return (
     <div className="purchase-ok">
       <div>
-        <b>✅ Purchase confirmed — everything is unlocked on this browser.</b>
+        <b>✅ Unlocked — everything is yours on this browser.</b>
         <p className="hint">
-          On another computer, choose "Already bought? Sign in" and enter {license.email ? <b>{license.email}</b> : 'the email you used at checkout'} —
-          we'll email you a sign-in link.
-          {url && (
-            <>
-              {' '}
-              Your receipt link also works: <code>{url}</code>
-            </>
-          )}
+          Keep your license key{license.key ? <> (<code>{license.key}</code>)</> : null}; it is in your Gumroad receipt email and unlocks any other computer
+          too.
         </p>
       </div>
       <div className="chips">
-        {url && (
-          <button className="btn" onClick={() => void navigator.clipboard?.writeText(url)}>
-            Copy link
-          </button>
-        )}
         <button className="btn ghost" onClick={onDismiss}>
           Dismiss
         </button>
