@@ -42,7 +42,7 @@ export function DownloadPanel(p: Props) {
     <div className="panel download">
       <div className="songbar" style={{ marginBottom: 12 }}>
         <h3 style={{ margin: 0 }}>Put it on your car</h3>
-        <span className="chip unlocked">✓ Full version</span>
+        <span className="chip unlocked">{p.license.owner ? '👑 Owner' : '✓ Full version'}</span>
       </div>
       <label className="toggle">
         <input type="checkbox" checked={p.useSongName} onChange={(e) => p.onUseSongNameChange(e.target.checked)} />
@@ -95,19 +95,21 @@ export function DownloadPanel(p: Props) {
         </p>
       )}
       <UsbInstructions />
-      <details className="caps">
-        <summary>Setting this up on another computer?</summary>
-        <p className="hint">
-          Open the site there, choose <b>Already bought? Enter license key</b> and paste your key
-          {p.license.key ? (
-            <>
-              {' '}
-              (<code>{p.license.key}</code>)
-            </>
-          ) : null}
-          . It is also in your Gumroad receipt email.
-        </p>
-      </details>
+      {!p.license.owner && (
+        <details className="caps">
+          <summary>Setting this up on another computer?</summary>
+          <p className="hint">
+            Open the site there, choose <b>Already bought? Enter license key</b> and paste your key
+            {p.license.key ? (
+              <>
+                {' '}
+                (<code>{p.license.key}</code>)
+              </>
+            ) : null}
+            . It is also in your Gumroad receipt email.
+          </p>
+        </details>
+      )}
     </div>
   );
 }

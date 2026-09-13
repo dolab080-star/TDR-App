@@ -18,6 +18,21 @@ export function PurchaseBanner({ activation, license, onDismiss }: Props) {
     );
   }
 
+  if (license.owner) {
+    return (
+      <div className="purchase-ok">
+        <div>
+          <b>👑 Owner access — the whole tool is unlocked on this browser.</b>
+        </div>
+        <div className="chips">
+          <button className="btn ghost" onClick={onDismiss}>
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="purchase-ok">
       <div>

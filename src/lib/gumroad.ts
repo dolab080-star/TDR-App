@@ -46,6 +46,8 @@ export interface ActivationResult {
   ok: boolean;
   message: string;
   email?: string | null;
+  /** True for the owner's private key, which skips Gumroad and the activation limit. */
+  owner?: boolean;
 }
 
 /** Turns Gumroad's license-verify response into a yes/no with a human message. */
@@ -72,7 +74,7 @@ export async function activateKey(key: string): Promise<ActivationResult> {
       body: JSON.stringify({ key }),
     });
     const data = (await res.json().catch(() => ({}))) as Partial<ActivationResult>;
-    return { ok: res.ok && data.ok === true, message: data.message ?? 'Something went wrong. Please try again.', email: data.email ?? null };
+    return { ok: res.ok && data.ok === true, message: data.message ?? 'Something went wrong. Please try again.', email: data.email ?? null, owner: data.owner === true };
   } catch {
     return { ok: false, message: "Couldn't reach the license server. Check your connection and try again." };
   }

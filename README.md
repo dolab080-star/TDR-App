@@ -91,6 +91,12 @@ successful check; `maxActivations` in `src/lib/gumroad.ts` (default 3)
 stops a key that has been shared too widely. Gumroad's dashboard lists every
 sale with the buyer's email and key.
 
+**Owner access.** The owner has a private key that unlocks the app without a
+purchase and without counting toward the activation limit. Only its SHA-256
+fingerprint is in the code (`src/lib/owner.server.ts`), so the key is safe
+even in a public repository; that file explains how to rotate it. Paste the
+key into "Already bought? Enter license key" like any buyer would.
+
 To try the unlocked tool locally without paying, paste this in the browser
 console and reload:
 

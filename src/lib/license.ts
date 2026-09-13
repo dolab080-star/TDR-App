@@ -9,6 +9,8 @@ export interface License {
   key?: string;
   email?: string | null;
   purchasedAt?: number;
+  /** Unlocked with the owner's private key rather than a purchase. */
+  owner?: boolean;
 }
 
 const KEY = 'tesla-lightshow-maker.license.v2';
@@ -19,14 +21,16 @@ export function loadLicense(): License {
     const raw = localStorage.getItem(KEY);
     if (!raw) return UNLICENSED;
     const parsed = JSON.parse(raw) as Partial<License>;
-    return parsed.licensed === true && typeof parsed.key === 'string' ? { licensed: true, key: parsed.key, email: parsed.email ?? null, purchasedAt: parsed.purchasedAt } : UNLICENSED;
+    return parsed.licensed === true && typeof parsed.key === 'string'
+      ? { licensed: true, key: parsed.key, email: parsed.email ?? null, purchasedAt: parsed.purchasedAt, owner: parsed.owner === true }
+      : UNLICENSED;
   } catch {
     return UNLICENSED;
   }
 }
 
-export function saveLicense(key: string, email: string | null): License {
-  const license: License = { licensed: true, key, email, purchasedAt: Date.now() };
+export function saveLicense(key: string, email: string | null, owner = false): License {
+  const license: License = { licensed: true, key, email, purchasedAt: Date.now(), owner };
   try {
     localStorage.setItem(KEY, JSON.stringify(license));
   } catch {

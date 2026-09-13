@@ -5,6 +5,7 @@
  */
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GUMROAD, interpretVerify, normalizeKey, type GumroadVerifyBody } from '../src/lib/gumroad';
+import { isOwnerKey } from '../src/lib/owner.server';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -12,13 +13,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(405).json({ ok: false, message: 'method_not_allowed' });
     return;
   }
-  if (!GUMROAD.productId) {
-    res.status(503).json({ ok: false, message: "Payments aren't set up yet — check back soon." });
-    return;
-  }
   const key = normalizeKey((req.body as { key?: unknown } | undefined)?.key);
   if (!key) {
     res.status(400).json({ ok: false, message: 'That doesn’t look like a license key. It has four groups of eight letters and numbers, like 85DB262A-C19D4B06-A5335A6B-8C079166.' });
+    return;
+  }
+  if (isOwnerKey(key)) {
+    res.status(200).json({ ok: true, message: 'Owner access unlocked.', email: null, owner: true });
+    return;
+  }
+  if (!GUMROAD.productId) {
+    res.status(503).json({ ok: false, message: "Payments aren't set up yet — check back soon." });
     return;
   }
   try {

@@ -34,4 +34,11 @@ describe('license', () => {
     localStorage.setItem('tesla-lightshow-maker.license.v2', JSON.stringify({ licensed: true }));
     expect(loadLicense()).toEqual({ licensed: false });
   });
+
+  it('remembers owner access separately from a purchase', () => {
+    const license = saveLicense('ABCDEF12-ABCDEF12-ABCDEF12-ABCDEF12', null, true);
+    expect(license.owner).toBe(true);
+    expect(loadLicense().owner).toBe(true);
+    expect(saveLicense('85DB262A-C19D4B06-A5335A6B-8C079166', 'buyer@example.com').owner).toBe(false);
+  });
 });

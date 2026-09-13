@@ -13,7 +13,7 @@ export function useLicense(): { license: License; activation: Activation; activa
     setActivation({ status: 'checking' });
     const result = await activateKey(key);
     if (result.ok) {
-      setLicense(saveLicense(key.trim().toUpperCase(), result.email ?? null));
+      setLicense(saveLicense(key.trim().toUpperCase(), result.email ?? null, result.owner === true));
       setActivation({ status: 'confirmed' });
     } else {
       setActivation({ status: 'failed', message: result.message });
