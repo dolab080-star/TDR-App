@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { interpretVerify, normalizeKey } from '../src/lib/gumroad';
+import { interpretVerify, normalizeKey } from '../api/verify-license';
 
 describe('normalizeKey', () => {
   it('accepts real keys, sloppy pastes and dashless keys', () => {

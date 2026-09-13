@@ -78,23 +78,25 @@ To turn it on:
 2. In the product's **Content** tab tick **Generate a unique license key
    per sale**. Copy the **Product ID** shown there.
 3. Copy the product's link (looks like `https://yourname.gumroad.com/l/tdr`).
-4. Put both into `src/lib/gumroad.ts` (`productUrl` and `productId`) and
-   push. Until they are filled in the buy button says "Payments aren't set
-   up yet".
+4. Put the link into `src/lib/gumroad.ts` (`productUrl`) and the Product ID
+   into `api/verify-license.ts` (`GUMROAD_PRODUCT_ID`), then push. Until the
+   link is filled in the buy button says "Payments aren't set up yet".
 5. In the product's settings set the refund policy to **no refunds** so
    Gumroad's checkout matches the "all sales are final" terms shown in the
    app's Q&A and footer.
 
 `api/verify-license.ts` asks Gumroad's license endpoint whether a pasted key
 belongs to a paid, unrefunded purchase and counts one activation per
-successful check; `maxActivations` in `src/lib/gumroad.ts` (default 3)
-stops a key that has been shared too widely. Gumroad's dashboard lists every
+successful check; `MAX_ACTIVATIONS` there (default 3) stops a key that has
+been shared too widely. The function is deliberately self-contained (Node
+built-ins only) so it can never fail to load a project module at runtime. Gumroad's dashboard lists every
 sale with the buyer's email and key.
 
 **Owner access.** The owner has a private key that unlocks the app without a
 purchase and without counting toward the activation limit. Only its SHA-256
-fingerprint is in the code (`src/lib/owner.server.ts`), so the key is safe
-even in a public repository; that file explains how to rotate it. Paste the
+fingerprint is in the code (`OWNER_KEY_SHA256` in `api/verify-license.ts`),
+so the key is safe even in a public repository; the comment there explains
+how to rotate it. Paste the
 key into "Already bought? Enter license key" like any buyer would.
 
 To try the unlocked tool locally without paying, paste this in the browser

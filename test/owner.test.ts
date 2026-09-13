@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { isOwnerKey, OWNER_KEY_SHA256 } from '../src/lib/owner.server';
+import { isOwnerKey, OWNER_KEY_SHA256 } from '../api/verify-license';
 
 describe('owner key', () => {
   it('stores only a 64-character SHA-256 fingerprint, never the key', () => {
